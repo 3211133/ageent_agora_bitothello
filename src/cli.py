@@ -9,7 +9,15 @@ def main():
         if not moves:
             break
         print(f"{player}'s turn. Legal moves: {moves}")
-        pos = int(input('Enter move position (0-63): '))
+        while True:
+            try:
+                pos = int(input('Enter move position (0-63): '))
+                if pos not in range(64):
+                    print("Invalid input. Please enter a number between 0 and 63.")
+                    continue
+                break
+            except ValueError:
+                print("Invalid input. Please enter a valid integer.")
         board.apply_move(player, pos)
         player = 'white' if player == 'black' else 'black'
 
