@@ -10,6 +10,8 @@ pip install -e .
 
 # 対戦を開始
 othello [--ai]
+# GUI 版を起動
+othello-gui
 ```
 
 `--ai` オプションを指定すると白番をコンピュータが担当します。

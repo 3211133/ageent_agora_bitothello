@@ -11,6 +11,7 @@ requires-python = ">=3.8"
 
 [project.scripts]
 othello = "othello.cli:play"
+othello-gui = "othello.gui:play_gui"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
