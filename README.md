@@ -19,3 +19,7 @@ othello
 ```bash
 pytest
 ```
+
+## 継続的インテグレーション
+
+GitHub Actions を用いて `pytest` を自動実行します。`main` ブランチへの push または PR 作成時にテストが走ります。
