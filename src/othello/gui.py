@@ -30,20 +30,14 @@ class OthelloGUI:
                     self.canvas.create_oval(x1 + 5, y1 + 5, x2 - 5, y2 - 5, fill="black")
                 elif self.board.white & bit:
                     self.canvas.create_oval(x1 + 5, y1 + 5, x2 - 5, y2 - 5, fill="white")
-        legal = self.board.legal_moves(
+        legal_moves = self.get_legal_moves(
             self.board.black if self.black_to_move else self.board.white,
             self.board.white if self.black_to_move else self.board.black,
         )
-        bb = legal
-        while bb:
-            lsb = bb & -bb
-            idx = (lsb.bit_length() - 1)
-            pos = 63 - idx
-            row, col = divmod(pos, 8)
+        for row, col in legal_moves:
             x1, y1 = col * SIZE + SIZE // 2 - 5, row * SIZE + SIZE // 2 - 5
             x2, y2 = x1 + 10, y1 + 10
             self.canvas.create_oval(x1, y1, x2, y2, outline="yellow")
-            bb ^= lsb
 
     def handle_click(self, event) -> None:
         col = event.x // SIZE
