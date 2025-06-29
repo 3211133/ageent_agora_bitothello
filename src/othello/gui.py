@@ -55,9 +55,10 @@ class OthelloGUI:
         if move & self.board.legal_moves(player, opponent):
             self.board = self.board.apply_move(move, self.black_to_move)
             self.black_to_move = not self.black_to_move
+            self.status_label.config(text="")  # Clear the status label after a valid move
             self.after_move()
         else:
-            print("Illegal move")
+            self.status_label.config(text="Illegal move")
 
     def after_move(self) -> None:
         if self.vs_ai and not self.black_to_move:
