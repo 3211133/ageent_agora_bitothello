@@ -1,3 +1,15 @@
 # agent_agora_bitothello
-aiにrandomな依頼を行うレポジトリ。
-盤面を64bit配列の組で扱うようなオセロのプログラムを作成する。
+
+64bitビットボードで実装したシンプルなオセロゲームです。
+
+## 使い方
+
+```bash
+python -m src.cli
+```
+
+## テスト実行
+
+```bash
+pytest
+```
