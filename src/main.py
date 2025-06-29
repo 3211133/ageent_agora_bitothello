@@ -32,8 +32,10 @@ def main():
             move = parse_move(move_str)
             board = board.apply_move(move, black_to_move)
             black_to_move = not black_to_move
-        except Exception as e:
-            print(e)
+        except ValueError as e:
+            print(f"Invalid move format: {e}. Please enter a valid move (e.g., d3).")
+        except InvalidMoveError as e:
+            print(f"Illegal move: {e}. Please try again.")
 
     b_count = bin(board.black).count('1')
     w_count = bin(board.white).count('1')
