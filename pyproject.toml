@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "othello"
+version = "0.1.0"
+description = "Bitboard-based Othello game"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.scripts]
+othello = "othello.cli:play"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
