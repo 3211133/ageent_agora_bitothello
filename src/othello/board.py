@@ -1,3 +1,5 @@
+"""Bitboard based representation of an Othello board."""
+
 from __future__ import annotations
 from dataclasses import dataclass
 
@@ -23,19 +25,24 @@ NOT_H_FILE = int(0x7f7f7f7f7f7f7f7f)
 
 @dataclass
 class BitBoard:
+    """Othello board encoded as two 64-bit integers for black and white."""
+
     black: int
     white: int
 
     @staticmethod
     def initial() -> "BitBoard":
+        """Return a board in the standard initial Othello setup."""
         black = 0x0000000810000000
         white = 0x0000001008000000
         return BitBoard(black, white)
 
     def occupied(self) -> int:
+        """Return a bitboard with all occupied squares."""
         return self.black | self.white
 
     def empty(self) -> int:
+        """Return a bitboard with all empty squares."""
         return ~self.occupied() & ((1 << TOTAL_SQUARES) - 1)
 
     @staticmethod
@@ -52,7 +59,7 @@ class BitBoard:
         return bb
 
     def legal_moves(self, player: int, opponent: int) -> int:
-        """Return bitboard of legal moves for the player."""
+        """Return bitboard of legal moves for ``player`` against ``opponent``."""
         empty = self.empty()
         moves = 0
         for d in DIRS:
@@ -68,6 +75,7 @@ class BitBoard:
         return moves
 
     def flips(self, move: int, player: int, opponent: int) -> int:
+        """Return the stones that would be flipped by ``move``."""
         flips = 0
         for d in DIRS:
             mask = 0
@@ -80,6 +88,7 @@ class BitBoard:
         return flips
 
     def apply_move(self, move: int, black_to_move: bool) -> "BitBoard":
+        """Return new board after applying ``move`` for the current player."""
         player = self.black if black_to_move else self.white
         opponent = self.white if black_to_move else self.black
         flips = self.flips(move, player, opponent)
@@ -93,6 +102,7 @@ class BitBoard:
             return BitBoard(opponent, player)
 
     def __str__(self) -> str:
+        """Return an ASCII representation of the board."""
         s = ""
         for i in range(TOTAL_SQUARES):
             bit = 1 << (TOTAL_SQUARES - 1 - i)
