@@ -1,5 +1,6 @@
-from othello.cli import play
+"""Entry point for running the command line game."""
 
+from othello.cli import main
 
-if __name__ == '__main__':
-    play()
+if __name__ == "__main__":
+    main()

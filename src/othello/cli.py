@@ -1,16 +1,18 @@
+"""Command line interface for playing Othello."""
+
 from .board import BitBoard
 
 
 def parse_move(move_str: str) -> int:
-    """Convert a move in algebraic form (e.g. 'd3') to bitboard position."""
+    """Return bit mask corresponding to ``move_str`` such as 'd3'."""
     col = ord(move_str[0].lower()) - ord('a')
     row = int(move_str[1]) - 1
     pos = row * 8 + col
     return 1 << (63 - pos)
 
 
-def play() -> None:
-    """Start an interactive Othello game in the terminal."""
+def run_game() -> None:
+    """Run an interactive two-player game in the terminal."""
     board = BitBoard.initial()
     black_to_move = True
     while True:
@@ -39,7 +41,11 @@ def play() -> None:
             black_to_move = not black_to_move
         except ValueError as e:
             print(f"Illegal move: {e}. Please try again.")
-
     b_count = bin(board.black).count('1')
     w_count = bin(board.white).count('1')
     print(f"Final score - Black: {b_count}, White: {w_count}")
+
+
+def main() -> None:
+    """Entry point used by ``python -m othello.cli``."""
+    run_game()
