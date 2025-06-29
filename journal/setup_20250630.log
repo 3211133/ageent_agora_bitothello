@@ -1,0 +1,5 @@
+2025-06-26 10:00: Created initial BitBoard implementation and play logic.
+2025-06-27 11:30: Added docstrings and edge case tests.
+2025-06-28 09:20: Added CLI via pyproject.toml; updated README.
+2025-06-29 14:10: Updated .gitignore for Python cache files.
+2025-06-30 08:00: Added GitHub Actions for CI.
