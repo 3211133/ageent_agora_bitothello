@@ -1,2 +1,3 @@
-# agent_agora
-aiにrandomな依頼を行う為のテンプレート
+# agent_agora_bitothello
+aiにrandomな依頼を行うレポジトリ。
+盤面を64bit配列の組で扱うようなオセロのプログラムを作成する。
