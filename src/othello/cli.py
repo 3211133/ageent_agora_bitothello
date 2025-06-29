@@ -1,6 +1,8 @@
 """Command line interface for playing Othello."""
 
 from .board import BitBoard
+from .ai import choose_move
+import argparse
 
 
 def parse_move(move_str: str) -> int:
@@ -11,13 +13,13 @@ def parse_move(move_str: str) -> int:
     return 1 << (63 - pos)
 
 
-def run_game() -> None:
-    """Run an interactive two-player game in the terminal."""
+def run_game(vs_ai: bool = False) -> None:
+    """Run an interactive game in the terminal."""
     board = BitBoard.initial()
     black_to_move = True
     while True:
         print(board)
-        player = 'Black' if black_to_move else 'White'
+        player = "Black" if black_to_move else "White"
         legal = board.legal_moves(
             board.black if black_to_move else board.white,
             board.white if black_to_move else board.black,
@@ -32,8 +34,23 @@ def run_game() -> None:
                 print("No moves for both players. Game over.")
                 break
             continue
+        if vs_ai and not black_to_move:
+            move = choose_move(board, black_to_move)
+            if move == 0:  # AI has no legal moves
+                print("White (AI) has no moves. Pass.")
+                black_to_move = not black_to_move
+                if board.legal_moves(
+                    board.black if black_to_move else board.white,
+                    board.white if black_to_move else board.black,
+                ) == 0:
+                    print("No moves for both players. Game over.")
+                    break
+                continue
+            board = board.apply_move(move, black_to_move)
+            black_to_move = not black_to_move
+            continue
         move_str = input(f"{player} move (e.g., d3) or 'q' to quit: ")
-        if move_str.lower() == 'q':
+        if move_str.lower() == "q":
             break
         try:
             move = parse_move(move_str)
@@ -41,11 +58,19 @@ def run_game() -> None:
             black_to_move = not black_to_move
         except ValueError as e:
             print(f"Illegal move: {e}. Please try again.")
-    b_count = bin(board.black).count('1')
-    w_count = bin(board.white).count('1')
+    b_count = bin(board.black).count("1")
+    w_count = bin(board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
 
 
 def main() -> None:
     """Entry point used by ``python -m othello.cli``."""
-    run_game()
+    parser = argparse.ArgumentParser(description="Play Othello")
+    parser.add_argument(
+        "--ai", action="store_true", help="Play against the computer (as white)"
+    )
+    args = parser.parse_args()
+    run_game(vs_ai=args.ai)
+
+# Backward compatible entry point
+play = main

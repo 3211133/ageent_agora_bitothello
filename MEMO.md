@@ -6,3 +6,4 @@ ARCHITECT.md を追加し、現状の設計思想を整理した。TODOにAI対�
 Pythonキャッシュとテスト成果物を無視するよう.gitignoreを更新した。
 GitHub Actions を追加して CI を導入した。README にセクションを追加。
 TODO に GUI 対戦モードの実装を追加した。
+簡易的なランダム手を打つAIを実装し、CLIで --ai オプションを受け付けるようにした。
