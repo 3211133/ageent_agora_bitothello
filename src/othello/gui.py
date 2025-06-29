@@ -13,19 +13,19 @@ class OthelloGUI:
         self.black_to_move = True
         self.root = tk.Tk()
         self.root.title("Othello")
-        self.canvas = tk.Canvas(self.root, width=SIZE * 8, height=SIZE * 8)
+        self.canvas = tk.Canvas(self.root, width=SIZE * BOARD_SIZE, height=SIZE * BOARD_SIZE)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.handle_click)
         self.draw_board()
 
     def draw_board(self) -> None:
         self.canvas.delete("all")
-        for row in range(8):
-            for col in range(8):
+        for row in range(BOARD_SIZE):
+            for col in range(BOARD_SIZE):
                 x1, y1 = col * SIZE, row * SIZE
                 x2, y2 = x1 + SIZE, y1 + SIZE
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill="green")
-                bit = 1 << (63 - (row * 8 + col))
+                bit = 1 << (63 - (row * BOARD_SIZE + col))
                 if self.board.black & bit:
                     self.canvas.create_oval(x1 + 5, y1 + 5, x2 - 5, y2 - 5, fill="black")
                 elif self.board.white & bit:
