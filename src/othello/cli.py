@@ -36,6 +36,16 @@ def run_game(vs_ai: bool = False) -> None:
             continue
         if vs_ai and not black_to_move:
             move = choose_move(board, black_to_move)
+            if move == 0:  # AI has no legal moves
+                print("White (AI) has no moves. Pass.")
+                black_to_move = not black_to_move
+                if board.legal_moves(
+                    board.black if black_to_move else board.white,
+                    board.white if black_to_move else board.black,
+                ) == 0:
+                    print("No moves for both players. Game over.")
+                    break
+                continue
             board = board.apply_move(move, black_to_move)
             black_to_move = not black_to_move
             continue
