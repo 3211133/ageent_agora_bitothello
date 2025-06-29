@@ -5,3 +5,4 @@ pyproject.toml を導入し、CLI 用に othello コマンドを登録。README 
 ARCHITECT.md を追加し、現状の設計思想を整理した。TODOにAI対戦機能の実装を追加。
 Pythonキャッシュとテスト成果物を無視するよう.gitignoreを更新した。
 GitHub Actions を追加して CI を導入した。README にセクションを追加。
+TODO に GUI 対戦モードの実装を追加した。
