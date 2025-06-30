@@ -1,0 +1,1 @@
+2025-07-04 09:00: Restored mask_from_ascii helper in tests to fix NameError.
