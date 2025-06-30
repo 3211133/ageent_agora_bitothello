@@ -4,18 +4,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 from othello.board import BitBoard
 
 
-def mask_from_ascii(board_str: str) -> int:
-    """Return bit mask represented by any non-dot character in ``board_str``."""
-    lines = [line.strip() for line in board_str.strip().splitlines()]
-    mask = 0
-    for r, line in enumerate(lines):
-        for c, ch in enumerate(line):
-            if ch != '.':
-                bit = 1 << (63 - (r * 8 + c))
-                mask |= bit
-    return mask
-
-
+# Removed the `mask_from_ascii` function as its logic is redundant with `BitBoard.from_ascii`.
 def test_initial_setup():
     b = BitBoard.initial()
     expected = BitBoard.from_ascii(
