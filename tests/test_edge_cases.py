@@ -16,6 +16,17 @@ def test_illegal_move_rejected():
 
 
 def test_game_end_detected():
-    board = BitBoard((1 << 64) - 1, 0)
+    board = BitBoard.from_ascii(
+        """
+BBBBBBBB
+BBBBBBBB
+BBBBBBBB
+BBBBBBBB
+BBBBBBBB
+BBBBBBBB
+BBBBBBBB
+BBBBBBBB
+"""
+    )
     assert board.legal_moves(board.black, board.white) == 0
     assert board.legal_moves(board.white, board.black) == 0
