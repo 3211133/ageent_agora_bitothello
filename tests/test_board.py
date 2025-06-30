@@ -4,7 +4,23 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 from othello.board import BitBoard
 
 
-# Removed the `mask_from_ascii` function as its logic is redundant with `BitBoard.from_ascii`.
+def mask_from_ascii(board_str: str) -> int:
+    """Return bit mask represented by any non-dot character in ``board_str``.
+
+    ``BitBoard.from_ascii`` only parses ``B``/``W`` stones.  Test diagrams
+    mark legal moves with ``X`` or other letters, so we need a separate
+    helper to convert such diagrams into bit masks for assertions.
+    """
+    lines = [line.strip() for line in board_str.strip().splitlines()]
+    mask = 0
+    for r, line in enumerate(lines):
+        for c, ch in enumerate(line):
+            if ch != ".":
+                bit = 1 << (63 - (r * 8 + c))
+                mask |= bit
+    return mask
+
+# Helper functions and readable board diagrams improve test clarity.
 def test_initial_setup():
     b = BitBoard.initial()
     expected = BitBoard.from_ascii(
