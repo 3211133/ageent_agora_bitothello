@@ -13,8 +13,8 @@ def parse_move(move_str: str) -> int:
     return 1 << (63 - pos)
 
 
-def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> None:
-    """Run an interactive game in the terminal.
+def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> BitBoard:
+    """Run an interactive game in the terminal and return the final board.
 
     ``vs_ai``  enables human vs computer play (human as black, AI as white).
     ``ai_vs_ai`` runs an automatic game between two AIs.
@@ -66,6 +66,7 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> None:
     b_count = bin(board.black).count("1")
     w_count = bin(board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
+    return board
 
 
 def main() -> None:
