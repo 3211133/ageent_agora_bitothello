@@ -13,8 +13,13 @@ def parse_move(move_str: str) -> int:
     return 1 << (63 - pos)
 
 
-def run_game(vs_ai: bool = False) -> None:
-    """Run an interactive game in the terminal."""
+def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> None:
+    """Run an interactive game in the terminal.
+
+    ``vs_ai``  enables human vs computer play (human as black, AI as white).
+    ``ai_vs_ai`` runs an automatic game between two AIs.
+    ``ai_vs_ai`` takes precedence over ``vs_ai``.
+    """
     board = BitBoard.initial()
     black_to_move = True
     while True:
@@ -34,10 +39,10 @@ def run_game(vs_ai: bool = False) -> None:
                 print("No moves for both players. Game over.")
                 break
             continue
-        if vs_ai and not black_to_move:
+        if ai_vs_ai or (vs_ai and not black_to_move):
             move = choose_move(board, black_to_move)
             if move == 0:  # AI has no legal moves
-                print("White (AI) has no moves. Pass.")
+                print(f"{player} (AI) has no moves. Pass.")
                 black_to_move = not black_to_move
                 if board.legal_moves(
                     board.black if black_to_move else board.white,
@@ -69,8 +74,13 @@ def main() -> None:
     parser.add_argument(
         "--ai", action="store_true", help="Play against the computer (as white)"
     )
+    parser.add_argument(
+        "--ai-vs-ai",
+        action="store_true",
+        help="Watch two AIs play automatically",
+    )
     args = parser.parse_args()
-    run_game(vs_ai=args.ai)
+    run_game(vs_ai=args.ai, ai_vs_ai=args.ai_vs_ai)
 
 # Backward compatible entry point
 play = main
