@@ -37,6 +37,30 @@ class BitBoard:
         white = 0x0000001008000000
         return BitBoard(black, white)
 
+    @staticmethod
+    def from_ascii(board_str: str) -> "BitBoard":
+        """Create a board from an ASCII diagram.
+
+        The diagram should consist of 8 lines of 8 characters using
+        ``B`` for black, ``W`` for white and ``.`` for empty squares.
+        """
+        lines = [line.strip() for line in board_str.strip().splitlines()]
+        if len(lines) != BOARD_SIZE:
+            raise ValueError("Board diagram must have 8 lines")
+        black = white = 0
+        for r, line in enumerate(lines):
+            if len(line) != BOARD_SIZE:
+                raise ValueError("Each line in board diagram must have 8 characters")
+            for c, ch in enumerate(line):
+                bit = 1 << (TOTAL_SQUARES - 1 - (r * BOARD_SIZE + c))
+                if ch == "B":
+                    black |= bit
+                elif ch == "W":
+                    white |= bit
+                elif ch != ".":
+                    raise ValueError(f"Invalid character '{ch}' in board diagram")
+        return BitBoard(black, white)
+
     def occupied(self) -> int:
         """Return a bitboard with all occupied squares."""
         return self.black | self.white
