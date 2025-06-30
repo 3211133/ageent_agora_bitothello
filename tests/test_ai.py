@@ -17,4 +17,8 @@ def test_ai_move_is_legal():
 
 def test_ai_vs_ai_completes():
     random.seed(0)
-    run_game(ai_vs_ai=True)
+    board = run_game(ai_vs_ai=True)
+    assert isinstance(board, BitBoard)
+    no_moves_black = board.legal_moves(board.black, board.white)
+    no_moves_white = board.legal_moves(board.white, board.black)
+    assert no_moves_black == 0 and no_moves_white == 0
