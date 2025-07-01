@@ -22,6 +22,9 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> BitBoard:
     """
     board = BitBoard.initial()
     black_to_move = True
+    history = [(board, black_to_move)]
+    future: list[tuple[BitBoard, bool]] = []
+
     while True:
         print(board)
         player = "Black" if black_to_move else "White"
@@ -54,13 +57,32 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> BitBoard:
             board = board.apply_move(move, black_to_move)
             black_to_move = not black_to_move
             continue
-        move_str = input(f"{player} move (e.g., d3) or 'q' to quit: ")
+        move_str = input(
+            f"{player} move (e.g., d3), 'u' to undo, 'r' to redo, or 'q' to quit: "
+        )
         if move_str.lower() == "q":
             break
+        if move_str.lower() == "u":
+            if len(history) > 1:
+                future.append((board, black_to_move))
+                history.pop()
+                board, black_to_move = history[-1]
+            else:
+                print("Cannot undo")
+            continue
+        if move_str.lower() == "r":
+            if future:
+                board, black_to_move = future.pop()
+                history.append((board, black_to_move))
+            else:
+                print("Cannot redo")
+            continue
         try:
             move = parse_move(move_str)
             board = board.apply_move(move, black_to_move)
             black_to_move = not black_to_move
+            history.append((board, black_to_move))
+            future.clear()
         except ValueError as e:
             print(f"Illegal move: {e}. Please try again.")
     b_count = bin(board.black).count("1")
