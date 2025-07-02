@@ -7,8 +7,9 @@ from .ai import choose_move
 SIZE = 50
 
 class OthelloGUI:
-    def __init__(self, vs_ai: bool = False) -> None:
+    def __init__(self, vs_ai: bool = False, ai_level: str = "easy") -> None:
         self.vs_ai = vs_ai
+        self.ai_level = ai_level
         self.board = BitBoard.initial()
         self.black_to_move = True
         self.root = tk.Tk()
@@ -56,7 +57,7 @@ class OthelloGUI:
 
     def after_move(self) -> None:
         if self.vs_ai and not self.black_to_move:
-            move = choose_move(self.board, self.black_to_move)
+            move = choose_move(self.board, self.black_to_move, level=self.ai_level)
             if move:
                 self.board = self.board.apply_move(move, self.black_to_move)
             self.black_to_move = not self.black_to_move
@@ -90,9 +91,9 @@ class OthelloGUI:
         self.root.mainloop()
 
 
-def play_gui(vs_ai: bool = False) -> None:
+def play_gui(vs_ai: bool = False, ai_level: str = "easy") -> None:
     """Entry point for playing the GUI version."""
-    OthelloGUI(vs_ai).run()
+    OthelloGUI(vs_ai, ai_level).run()
 
 if __name__ == "__main__":
     play_gui(vs_ai=True)
