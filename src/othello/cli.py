@@ -5,6 +5,23 @@ from .ai import choose_move
 import argparse
 
 
+def save_state(board: BitBoard, black_to_move: bool, path: str = "othello.sav") -> None:
+    """Save ``board`` and turn information to ``path``."""
+    with open(path, "w") as f:
+        f.write(f"{board.black}\n{board.white}\n{1 if black_to_move else 0}\n")
+
+
+def load_state(path: str = "othello.sav") -> tuple[BitBoard, bool]:
+    """Load board and turn information from ``path``."""
+    with open(path) as f:
+        lines = f.read().splitlines()
+    if len(lines) != 3:
+        raise ValueError("Invalid save file")
+    board = BitBoard(int(lines[0]), int(lines[1]))
+    black_to_move = bool(int(lines[2]))
+    return board, black_to_move
+
+
 def parse_move(move_str: str) -> int:
     """Return bit mask corresponding to ``move_str`` such as 'd3'."""
     col = ord(move_str[0].lower()) - ord('a')
@@ -58,7 +75,7 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> BitBoard:
             black_to_move = not black_to_move
             continue
         move_str = input(
-            f"{player} move (e.g., d3), 'u' to undo, 'r' to redo, or 'q' to quit: "
+            f"{player} move (e.g., d3), 'u' to undo, 'r' to redo, 's' to save, 'l' to load, or 'q' to quit: "
         )
         if move_str.lower() == "q":
             break
@@ -76,6 +93,19 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False) -> BitBoard:
                 history.append((board, black_to_move))
             else:
                 print("Cannot redo")
+            continue
+        if move_str.lower() == "s":
+            save_state(board, black_to_move)
+            print("Game saved")
+            continue
+        if move_str.lower() == "l":
+            try:
+                board, black_to_move = load_state()
+                history = [(board, black_to_move)]
+                future.clear()
+                print("Game loaded")
+            except Exception as e:
+                print(f"Load failed: {e}")
             continue
         try:
             move = parse_move(move_str)
