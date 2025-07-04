@@ -1,36 +1,14 @@
 """Command line interface for playing Othello."""
 
-from .board import BitBoard
+from .board import BitBoard, parse_move
 from .ai import choose_move
 from . import network
+from .game import Game, save_state, load_state
 import argparse
 import socket
 import time
 
 
-def save_state(board: BitBoard, black_to_move: bool, path: str = "othello.sav") -> None:
-    """Save ``board`` and turn information to ``path``."""
-    with open(path, "w") as f:
-        f.write(f"{board.black}\n{board.white}\n{1 if black_to_move else 0}\n")
-
-
-def load_state(path: str = "othello.sav") -> tuple[BitBoard, bool]:
-    """Load board and turn information from ``path``."""
-    with open(path) as f:
-        lines = f.read().splitlines()
-    if len(lines) != 3:
-        raise ValueError("Invalid save file")
-    board = BitBoard(int(lines[0]), int(lines[1]))
-    black_to_move = bool(int(lines[2]))
-    return board, black_to_move
-
-
-def parse_move(move_str: str) -> int:
-    """Return bit mask corresponding to ``move_str`` such as 'd3'."""
-    col = ord(move_str[0].lower()) - ord('a')
-    row = int(move_str[1]) - 1
-    pos = row * 8 + col
-    return 1 << (63 - pos)
 
 
 def run_game(
@@ -46,10 +24,7 @@ def run_game(
     ``ai_vs_ai`` takes precedence over ``vs_ai``.
     ``ai_level`` specifies the AI difficulty (``"easy"``, ``"hard`` or ``"expert"``).
     """
-    board = BitBoard.initial()
-    black_to_move = True
-    history = [(board, black_to_move)]
-    future: list[tuple[BitBoard, bool]] = []
+    game = Game(board=BitBoard.initial(), black_to_move=True)
     time_left = {True: time_limit, False: time_limit} if time_limit is not None else None
 
     def deduct(player: bool, start: float) -> bool:
@@ -63,46 +38,36 @@ def run_game(
         return False
 
     while True:
-        if time_left is not None and time_left[black_to_move] <= 0:
-            player = "Black" if black_to_move else "White"
+        if time_left is not None and time_left[game.black_to_move] <= 0:
+            player = "Black" if game.black_to_move else "White"
             print(f"{player} ran out of time. Game over.")
             break
         start = time.time()
-        acting_player = black_to_move
-        print(board)
-        player = "Black" if black_to_move else "White"
-        legal = board.legal_moves(
-            board.black if black_to_move else board.white,
-            board.white if black_to_move else board.black,
-        )
+        acting_player = game.black_to_move
+        print(game.board)
+        player = "Black" if game.black_to_move else "White"
+        legal = game.legal_moves()
         if legal == 0:
             print(f"{player} has no moves. Pass.")
-            black_to_move = not black_to_move
+            game.black_to_move = not game.black_to_move
             if deduct(acting_player, start):
                 break
-            if board.legal_moves(
-                board.black if black_to_move else board.white,
-                board.white if black_to_move else board.black,
-            ) == 0:
+            if game.legal_moves() == 0:
                 print("No moves for both players. Game over.")
                 break
             continue
-        if ai_vs_ai or (vs_ai and not black_to_move):
-            move = choose_move(board, black_to_move, level=ai_level)
+        if ai_vs_ai or (vs_ai and not game.black_to_move):
+            move = choose_move(game.board, game.black_to_move, level=ai_level)
             if move == 0:  # AI has no legal moves
                 print(f"{player} (AI) has no moves. Pass.")
-                black_to_move = not black_to_move
+                game.black_to_move = not game.black_to_move
                 if deduct(acting_player, start):
                     break
-                if board.legal_moves(
-                    board.black if black_to_move else board.white,
-                    board.white if black_to_move else board.black,
-                ) == 0:
+                if game.legal_moves() == 0:
                     print("No moves for both players. Game over.")
                     break
                 continue
-            board = board.apply_move(move, black_to_move)
-            black_to_move = not black_to_move
+            game.apply_move(move)
             if deduct(acting_player, start):
                 break
             continue
@@ -114,35 +79,29 @@ def run_game(
                 break
             break
         if move_str.lower() == "u":
-            if len(history) > 1:
-                future.append((board, black_to_move))
-                history.pop()
-                board, black_to_move = history[-1]
-            else:
+            if not game.undo():
                 print("Cannot undo")
             if deduct(acting_player, start):
                 break
             continue
         if move_str.lower() == "r":
-            if future:
-                board, black_to_move = future.pop()
-                history.append((board, black_to_move))
-            else:
+            if not game.redo():
                 print("Cannot redo")
             if deduct(acting_player, start):
                 break
             continue
         if move_str.lower() == "s":
-            save_state(board, black_to_move)
+            save_state(game.board, game.black_to_move)
             print("Game saved")
             if deduct(acting_player, start):
                 break
             continue
         if move_str.lower() == "l":
             try:
-                board, black_to_move = load_state()
-                history = [(board, black_to_move)]
-                future.clear()
+                board, black = load_state()
+                game.board, game.black_to_move = board, black
+                game.history[:] = [(board, black)]
+                game.future.clear()
                 print("Game loaded")
             except Exception as e:
                 print(f"Load failed: {e}")
@@ -151,10 +110,7 @@ def run_game(
             continue
         try:
             move = parse_move(move_str)
-            board = board.apply_move(move, black_to_move)
-            black_to_move = not black_to_move
-            history.append((board, black_to_move))
-            future.clear()
+            game.apply_move(move)
         except ValueError as e:
             print(f"Illegal move: {e}. Please try again.")
             if deduct(acting_player, start):
@@ -162,10 +118,10 @@ def run_game(
             continue
         if deduct(acting_player, start):
             break
-    b_count = bin(board.black).count("1")
-    w_count = bin(board.white).count("1")
+    b_count = bin(game.board.black).count("1")
+    w_count = bin(game.board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
-    return board
+    return game.board
 
 
 def run_network_game(host: str | None = None, connect: str | None = None) -> BitBoard:
@@ -181,33 +137,26 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
     else:
         raise ValueError("host or connect must be provided")
 
-    board = BitBoard.initial()
-    black_to_move = True
+    game = Game(board=BitBoard.initial(), black_to_move=True)
 
     while True:
-        print(board)
-        player = "Black" if black_to_move else "White"
-        legal = board.legal_moves(
-            board.black if black_to_move else board.white,
-            board.white if black_to_move else board.black,
-        )
+        print(game.board)
+        player = "Black" if game.black_to_move else "White"
+        legal = game.legal_moves()
         if legal == 0:
             print(f"{player} has no moves. Pass.")
-            if black_to_move == my_black:
+            if game.black_to_move == my_black:
                 network.send_line(sock, "PASS")
             else:
                 msg = network.recv_line(sock)
                 if msg != "PASS":
                     raise ValueError("Expected PASS")
-            black_to_move = not black_to_move
-            if board.legal_moves(
-                board.black if black_to_move else board.white,
-                board.white if black_to_move else board.black,
-            ) == 0:
+            game.black_to_move = not game.black_to_move
+            if game.legal_moves() == 0:
                 print("No moves for both players. Game over.")
                 break
             continue
-        if black_to_move == my_black:
+        if game.black_to_move == my_black:
             move_str = input(f"{player} move (e.g., d3) or 'q' to quit: ")
             if move_str.lower() == "q":
                 network.send_line(sock, "QUIT")
@@ -221,13 +170,12 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
                 print("Opponent quit.")
                 break
             move = parse_move(msg)
-        board = board.apply_move(move, black_to_move)
-        black_to_move = not black_to_move
+        game.apply_move(move)
 
-    b_count = bin(board.black).count("1")
-    w_count = bin(board.white).count("1")
+    b_count = bin(game.board.black).count("1")
+    w_count = bin(game.board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
-    return board
+    return game.board
 
 
 def main() -> None:
