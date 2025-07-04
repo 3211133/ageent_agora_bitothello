@@ -9,7 +9,7 @@
 pip install -e .
 
 # 対戦を開始
-othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard}]
+othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard}] [--host HOST:PORT | --connect HOST:PORT]
 # GUI 版を起動
 othello-gui
 ```
@@ -17,6 +17,7 @@ othello-gui
 `--ai` を指定すると白番をコンピュータが担当します。
 `--ai-vs-ai` を指定すると黒白とも自動で進行するデモを閲覧できます。
 `--ai-level` で AI の難易度 (`easy` または `hard`) を選択できます。
+`--host` で待ち受け、`--connect` で接続してネットワーク対戦が可能です。ホスト側が黒番になります。
 
 盤面は"B"が黒、"W"が白、"."が空白を表します。手番のプレイヤーは `a1` から `h8` の形式で座標を入力してください。入力中に `u` で一手戻し、`r` でやり直しができます。`s` で盤面を保存し、`l` で保存された盤面を読み込めます。
 `BitBoard.from_ascii()` を利用すると、この形式の文字列から盤面オブジェクトを作成できるため、テストやデバッグに便利です。
