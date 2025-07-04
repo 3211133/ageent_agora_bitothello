@@ -5,6 +5,7 @@ from .ai import choose_move
 from . import network
 import argparse
 import socket
+import time
 
 
 def save_state(board: BitBoard, black_to_move: bool, path: str = "othello.sav") -> None:
@@ -32,7 +33,12 @@ def parse_move(move_str: str) -> int:
     return 1 << (63 - pos)
 
 
-def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy") -> BitBoard:
+def run_game(
+    vs_ai: bool = False,
+    ai_vs_ai: bool = False,
+    ai_level: str = "easy",
+    time_limit: float | None = None,
+) -> BitBoard:
     """Run an interactive game in the terminal and return the final board.
 
     ``vs_ai``  enables human vs computer play (human as black, AI as white).
@@ -44,8 +50,25 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
     black_to_move = True
     history = [(board, black_to_move)]
     future: list[tuple[BitBoard, bool]] = []
+    time_left = {True: time_limit, False: time_limit} if time_limit is not None else None
+
+    def deduct(player: bool, start: float) -> bool:
+        if time_left is None:
+            return False
+        time_left[player] -= time.time() - start
+        if time_left[player] <= 0:
+            who = "Black" if player else "White"
+            print(f"{who} ran out of time. Game over.")
+            return True
+        return False
 
     while True:
+        if time_left is not None and time_left[black_to_move] <= 0:
+            player = "Black" if black_to_move else "White"
+            print(f"{player} ran out of time. Game over.")
+            break
+        start = time.time()
+        acting_player = black_to_move
         print(board)
         player = "Black" if black_to_move else "White"
         legal = board.legal_moves(
@@ -55,6 +78,8 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
         if legal == 0:
             print(f"{player} has no moves. Pass.")
             black_to_move = not black_to_move
+            if deduct(acting_player, start):
+                break
             if board.legal_moves(
                 board.black if black_to_move else board.white,
                 board.white if black_to_move else board.black,
@@ -67,6 +92,8 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
             if move == 0:  # AI has no legal moves
                 print(f"{player} (AI) has no moves. Pass.")
                 black_to_move = not black_to_move
+                if deduct(acting_player, start):
+                    break
                 if board.legal_moves(
                     board.black if black_to_move else board.white,
                     board.white if black_to_move else board.black,
@@ -76,11 +103,15 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
                 continue
             board = board.apply_move(move, black_to_move)
             black_to_move = not black_to_move
+            if deduct(acting_player, start):
+                break
             continue
         move_str = input(
             f"{player} move (e.g., d3), 'u' to undo, 'r' to redo, 's' to save, 'l' to load, or 'q' to quit: "
         )
         if move_str.lower() == "q":
+            if deduct(acting_player, start):
+                break
             break
         if move_str.lower() == "u":
             if len(history) > 1:
@@ -89,6 +120,8 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
                 board, black_to_move = history[-1]
             else:
                 print("Cannot undo")
+            if deduct(acting_player, start):
+                break
             continue
         if move_str.lower() == "r":
             if future:
@@ -96,10 +129,14 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
                 history.append((board, black_to_move))
             else:
                 print("Cannot redo")
+            if deduct(acting_player, start):
+                break
             continue
         if move_str.lower() == "s":
             save_state(board, black_to_move)
             print("Game saved")
+            if deduct(acting_player, start):
+                break
             continue
         if move_str.lower() == "l":
             try:
@@ -109,6 +146,8 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
                 print("Game loaded")
             except Exception as e:
                 print(f"Load failed: {e}")
+            if deduct(acting_player, start):
+                break
             continue
         try:
             move = parse_move(move_str)
@@ -118,6 +157,11 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
             future.clear()
         except ValueError as e:
             print(f"Illegal move: {e}. Please try again.")
+            if deduct(acting_player, start):
+                break
+            continue
+        if deduct(acting_player, start):
+            break
     b_count = bin(board.black).count("1")
     w_count = bin(board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
@@ -203,13 +247,23 @@ def main() -> None:
         default="easy",
         help="AI difficulty level",
     )
+    parser.add_argument(
+        "--time-limit",
+        type=float,
+        help="Total time per player in seconds",
+    )
     parser.add_argument("--host", help="Host a network game at host:port")
     parser.add_argument("--connect", help="Connect to a network game at host:port")
     args = parser.parse_args()
     if args.host or args.connect:
         run_network_game(host=args.host, connect=args.connect)
     else:
-        run_game(vs_ai=args.ai, ai_vs_ai=args.ai_vs_ai, ai_level=args.ai_level)
+        run_game(
+            vs_ai=args.ai,
+            ai_vs_ai=args.ai_vs_ai,
+            ai_level=args.ai_level,
+            time_limit=args.time_limit,
+        )
 
 # Backward compatible entry point
 play = main
