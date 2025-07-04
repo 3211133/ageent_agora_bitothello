@@ -38,7 +38,7 @@ def run_game(vs_ai: bool = False, ai_vs_ai: bool = False, ai_level: str = "easy"
     ``vs_ai``  enables human vs computer play (human as black, AI as white).
     ``ai_vs_ai`` runs an automatic game between two AIs.
     ``ai_vs_ai`` takes precedence over ``vs_ai``.
-    ``ai_level`` specifies the AI difficulty (``"easy"`` or ``"hard"``).
+    ``ai_level`` specifies the AI difficulty (``"easy"``, ``"hard`` or ``"expert"``).
     """
     board = BitBoard.initial()
     black_to_move = True
@@ -199,7 +199,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--ai-level",
-        choices=["easy", "hard"],
+        choices=["easy", "hard", "expert"],
         default="easy",
         help="AI difficulty level",
     )

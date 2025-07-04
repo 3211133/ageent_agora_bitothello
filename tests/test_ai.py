@@ -43,6 +43,24 @@ def test_hard_ai_chooses_greedy_move():
     assert move == expected
 
 
+def test_expert_ai_prefers_positional_move():
+    board = BitBoard.from_ascii(
+        """
+........
+........
+...W....
+.BWWW...
+...B....
+........
+........
+........
+"""
+    )
+    move = choose_move(board, True, level="expert")
+    expected = parse_move("f3")
+    assert move == expected
+
+
 def test_ai_vs_ai_respects_difficulty(monkeypatch):
     """AI vs AI mode should forward the chosen difficulty level."""
 
@@ -86,6 +104,12 @@ def test_ai_vs_ai_respects_difficulty(monkeypatch):
         run_game(ai_vs_ai=True, ai_level="hard")
     hard_move = moves.pop()[1]
 
+    monkeypatch.setattr("othello.cli.choose_move", capture_move)
+    with pytest.raises(StopIteration):
+        run_game(ai_vs_ai=True, ai_level="expert")
+    expert_move = moves.pop()[1]
+
     assert easy_move == parse_move("d7")
     assert hard_move == parse_move("f5")
+    assert expert_move == parse_move("f6")
 
