@@ -3,8 +3,7 @@ import pytest
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from othello.board import BitBoard
-from othello.cli import parse_move
+from othello.board import BitBoard, parse_move
 
 
 def mask_from_ascii(board_str: str) -> int:

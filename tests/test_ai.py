@@ -5,7 +5,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
 from othello.board import BitBoard
 from othello.ai import choose_move
-from othello.cli import run_game, parse_move
+from othello.cli import run_game
 
 
 def test_ai_move_is_legal():
