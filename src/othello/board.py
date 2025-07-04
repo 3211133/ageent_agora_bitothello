@@ -23,7 +23,7 @@ DIRS = {
 NOT_A_FILE = int(0xfefefefefefefefe)
 NOT_H_FILE = int(0x7f7f7f7f7f7f7f7f)
 
-@dataclass
+@dataclass(frozen=True)
 class BitBoard:
     """Othello board encoded as two 64-bit integers for black and white."""
 
@@ -139,3 +139,12 @@ class BitBoard:
             if (i + 1) % BOARD_SIZE == 0:
                 s += "\n"
         return s
+
+
+def parse_move(move_str: str) -> int:
+    """Return bit mask corresponding to ``move_str`` such as 'd3'."""
+    col = ord(move_str[0].lower()) - ord('a')
+    row = int(move_str[1]) - 1
+    pos = row * BOARD_SIZE + col
+    return 1 << (TOTAL_SQUARES - 1 - pos)
+
