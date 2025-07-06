@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 # Board constants
+# TODO: support configurable board sizes
 BOARD_SIZE = 8
 TOTAL_SQUARES = BOARD_SIZE * BOARD_SIZE
 
@@ -72,6 +73,7 @@ class BitBoard:
     @staticmethod
     def _shift(bitboard: int, direction: str) -> int:
         shift = DIRS[direction]
+        # REVIEW: verify that shifting logic still works for other board sizes
         if shift > 0:
             bb = bitboard << shift
         else:
@@ -148,6 +150,7 @@ def parse_move(move_str: str) -> int:
     """Return bit mask corresponding to ``move_str`` such as 'd3'."""
     col = ord(move_str[0].lower()) - ord('a')
     row = int(move_str[1]) - 1
+    # NOTE: assumes standard 8x8 board indexing
     pos = row * BOARD_SIZE + col
     return 1 << (TOTAL_SQUARES - 1 - pos)
 

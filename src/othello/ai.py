@@ -1,6 +1,8 @@
 import random
 from .board import BitBoard
 
+# TODO: implement an opening book for stronger openings
+
 # Positional weights used for the evaluation function. Corners are highly
 # valued while squares adjacent to corners are penalised. The values were
 # chosen heuristically.
@@ -39,6 +41,7 @@ def _evaluate(board: BitBoard) -> int:
 
 def _random_move(mask: int) -> int:
     """Return a random set bit from ``mask``."""
+    # NOTE: uses Python's random.choice over collected moves
     moves = []
     bb = mask
     while bb:
