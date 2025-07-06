@@ -22,3 +22,4 @@
 2025-07-16: モジュール構成を整理しARCHITECT.mdに反映。board/ai/cli/gui/networkの役割を明記した。
 2025-07-17: ARCHITECT.mdにあるべき姿を示すTODOセクションを追加。
 2025-07-18: CLI/GUIから独立したGameクラスをgame.pyに追加し、履歴管理とUndo/Redoを委譲した。
+2025-07-19: legal_movesが端の手を生成できずゲームが誤終了する不具合を修正。

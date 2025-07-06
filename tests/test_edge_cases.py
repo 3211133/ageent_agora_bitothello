@@ -30,3 +30,22 @@ BBBBBBBB
     )
     assert board.legal_moves(board.black, board.white) == 0
     assert board.legal_moves(board.white, board.black) == 0
+
+
+def test_legal_moves_on_edge_positions():
+    board = BitBoard.from_ascii(
+        """
+........
+...WWW..
+.B.W....
+.BWWWWB.
+.BBBWWB.
+.BBWWWB.
+.BWWBBB.
+.BBBBBW.
+"""
+    )
+    white_moves = board.legal_moves(board.white, board.black)
+    black_moves = board.legal_moves(board.black, board.white)
+    assert white_moves != 0
+    assert black_moves != 0
