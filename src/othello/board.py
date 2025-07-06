@@ -86,16 +86,19 @@ class BitBoard:
         """Return bitboard of legal moves for ``player`` against ``opponent``."""
         empty = self.empty()
         moves = 0
-        for d in DIRS:
-            mask = self._shift(player, d) & opponent
-            while mask:
-                mask = self._shift(mask, d)
-                if mask & player:
-                    break
-                if mask & empty:
-                    moves |= mask & empty
-                    break
-                mask &= opponent
+        candidates = empty
+        while candidates:
+            move = candidates & -candidates
+            for d in DIRS:
+                bb = self._shift(move, d)
+                if bb & opponent:
+                    bb = self._shift(bb, d)
+                    while bb & opponent:
+                        bb = self._shift(bb, d)
+                    if bb & player:
+                        moves |= move
+                        break
+            candidates ^= move
         return moves
 
     def flips(self, move: int, player: int, opponent: int) -> int:
