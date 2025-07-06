@@ -1,7 +1,11 @@
 """Simple Tkinter based GUI for playing Othello."""
 
+# TODO: improve GUI layout and graphics
+
 import tkinter as tk
 from .board import BitBoard
+
+# FIXME: BOARD_SIZE is used but not imported; consider `from .board import BOARD_SIZE`
 from .ai import choose_move
 
 SIZE = 50
@@ -17,6 +21,7 @@ class OthelloGUI:
         self.canvas = tk.Canvas(self.root, width=SIZE * BOARD_SIZE, height=SIZE * BOARD_SIZE)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.handle_click)
+        # TODO: add a status_label widget for user feedback
         self.draw_board()
 
     def draw_board(self) -> None:
@@ -31,6 +36,7 @@ class OthelloGUI:
                     self.canvas.create_oval(x1 + 5, y1 + 5, x2 - 5, y2 - 5, fill="black")
                 elif self.board.white & bit:
                     self.canvas.create_oval(x1 + 5, y1 + 5, x2 - 5, y2 - 5, fill="white")
+        # TODO: implement get_legal_moves to return coordinates
         legal_moves = self.get_legal_moves(
             self.board.black if self.black_to_move else self.board.white,
             self.board.white if self.black_to_move else self.board.black,
@@ -53,6 +59,7 @@ class OthelloGUI:
             self.status_label.config(text="")  # Clear the status label after a valid move
             self.after_move()
         else:
+            # TODO: status_label should exist; implement if missing
             self.status_label.config(text="Illegal move")
 
     def after_move(self) -> None:
@@ -82,6 +89,7 @@ class OthelloGUI:
                     fill="red",
                     font=("Helvetica", 20),
                 )
+                # TODO: integrate scoreboard view in GUI
                 self.canvas.unbind("<Button-1>")
                 return
             if self.vs_ai and not self.black_to_move:
@@ -94,6 +102,7 @@ class OthelloGUI:
 def play_gui(vs_ai: bool = False, ai_level: str = "easy") -> None:
     """Entry point for playing the GUI version."""
     OthelloGUI(vs_ai, ai_level).run()
+# TODO: expose additional GUI options via CLI
 
 if __name__ == "__main__":
     play_gui(vs_ai=True)

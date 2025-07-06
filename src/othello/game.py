@@ -8,6 +8,8 @@ from .board import BitBoard
 class Game:
     """Game state holding the board and turn information."""
 
+    # TODO: track cumulative scores between games
+
     board: BitBoard = field(default_factory=BitBoard.initial)
     black_to_move: bool = True
     history: list[tuple[BitBoard, bool]] = field(default_factory=list)
@@ -32,6 +34,7 @@ class Game:
         if len(self.history) <= 1:
             return False
         self.future.append(self.history.pop())
+        # NOTE: future stack grows with undos; consider bounding its size
         self.board, self.black_to_move = self.history[-1]
         return True
 
@@ -39,6 +42,7 @@ class Game:
         if not self.future:
             return False
         self.board, self.black_to_move = self.future.pop()
+        # REVIEW: ensure redo correctly restores future after branching
         self.history.append((self.board, self.black_to_move))
         return True
 

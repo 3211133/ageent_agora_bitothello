@@ -121,11 +121,13 @@ def run_game(
     b_count = bin(game.board.black).count("1")
     w_count = bin(game.board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
+    # TODO: display a persistent scoreboard across sessions
     return game.board
 
 
 def run_network_game(host: str | None = None, connect: str | None = None) -> BitBoard:
     """Play a game against a remote opponent."""
+    # WARNING: no encryption or authentication implemented
     if host:
         h, p = host.split(":")
         sock = network.host_game(h, int(p))
