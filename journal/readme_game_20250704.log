@@ -1,0 +1,2 @@
+Added description of Game class and parse_move location in README.
+Performed pytest to ensure tests pass.
