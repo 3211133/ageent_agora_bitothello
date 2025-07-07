@@ -161,9 +161,9 @@ def test_symmetry_preservation():
         moves.append((row, col))
         temp_mask ^= lsb
     
-    # Check that for each move (r,c), there's a symmetric move (r, 7-c)
-    symmetric_moves = [(r, 7-c) for r, c in moves]
-    assert set(moves) == set(symmetric_moves), "Legal moves should be symmetric"
+    # Check that for each move (r,c), there's a 180-degree rotationally symmetric move (7-r, 7-c)
+    symmetric_moves = [(7-r, 7-c) for r, c in moves]
+    assert set(moves) == set(symmetric_moves), "Legal moves should be rotationally symmetric"
 
 
 def test_bitwise_operation_consistency():

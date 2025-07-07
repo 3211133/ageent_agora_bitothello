@@ -22,9 +22,9 @@ def test_complete_game_sequence():
         ("c4", True),   # Black
         ("c5", False),  # White
         ("b3", True),   # Black
-        ("b4", False),  # White
+        ("a2", False),  # White
         ("b5", True),   # Black
-        ("a3", False),  # White
+        ("a5", False),  # White
     ]
     
     for move_str, expected_black_turn in moves:
@@ -38,10 +38,10 @@ def test_complete_game_sequence():
     expected_board = BitBoard.from_ascii(
         """
 ........
-........
-..WWW...
-.WWWW...
-.WWWW...
+W.......
+.WBB....
+..BBB...
+WWWWW...
 ........
 ........
 ........
@@ -211,7 +211,7 @@ def test_alternating_turns():
     """Test that turns alternate correctly."""
     game = Game()
     
-    moves = ["d3", "c3", "c4", "c5", "b3", "b4"]
+    moves = ["d3", "c3", "c4", "c5", "b3", "a2"]
     expected_turns = [True, False, True, False, True, False]
     
     for i, move_str in enumerate(moves):
@@ -255,8 +255,8 @@ def test_complex_multi_flip_scenario():
 """
     )
     
-    # Black plays d4 - should flip multiple stones in multiple directions
-    move = parse_move("d4")
+    # Black plays b4 - should flip white stones
+    move = parse_move("b4")
     new_board = board.apply_move(move, True)
     
     # Count stones before and after
@@ -265,7 +265,7 @@ def test_complex_multi_flip_scenario():
     new_black = bin(new_board.black).count('1')
     new_white = bin(new_board.white).count('1')
     
-    # Should have flipped multiple white stones
+    # Should have flipped white stones
     assert new_black > old_black + 1  # More than just the placed stone
     assert new_white < old_white
     assert new_black + new_white == old_black + old_white + 1
