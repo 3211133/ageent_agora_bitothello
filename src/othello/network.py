@@ -8,16 +8,16 @@ def host_game(host: str = "localhost", port: int = 9999) -> socket.socket:
         srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         srv.bind((host, port))
         srv.listen(1)
-        print(f"Waiting for connection on {host}:{port}...")
+        logger.info(f"Waiting for connection on {host}:{port}...")
         conn, addr = srv.accept()
-        print(f"Connected to {addr}")
+        logger.info(f"Connected to {addr}")
         srv.close()
         return conn
     except socket.error as e:
-        print(f"Network error while hosting game: {e}")
+        logger.error(f"Network error while hosting game: {e}")
         raise
     except Exception as e:
-        print(f"Unexpected error while hosting game: {e}")
+        logger.error(f"Unexpected error while hosting game: {e}")
         raise
 
 
