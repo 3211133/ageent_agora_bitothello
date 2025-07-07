@@ -26,5 +26,4 @@
 - [ ] status_label should exist; implement if missing
 - [ ] integrate scoreboard view in GUI
 - [ ] expose additional GUI options via CLI
-- [ ] handle network errors and retries gracefully
-- [ ] support connection timeout and error handling
+- [ ] implement robust network error handling with retries and timeouts
