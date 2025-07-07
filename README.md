@@ -14,6 +14,8 @@ othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard,expert}] [--time-limit SECS] 
 othello-gui
 ```
 
+GUI では合法手のハイライトと、無効な操作時にメッセージを表示するステータスラベルを追加しています。
+
 `--ai` を指定すると白番をコンピュータが担当します。
 `--ai-vs-ai` を指定すると黒白とも自動で進行するデモを閲覧できます。
 `--ai-level` で AI の難易度 (`easy`, `hard`, `expert`) を選択できます。`hard` は
