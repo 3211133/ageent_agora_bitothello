@@ -3,9 +3,18 @@
 # TODO: improve GUI layout and graphics
 
 import tkinter as tk
-from .board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
 
-from .ai import choose_move
+# Handle both relative and absolute imports for direct execution
+try:
+    from .board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
+    from .ai import choose_move
+except (ImportError, ValueError):
+    # Direct execution fallback
+    import sys
+    import os
+    sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+    from othello.board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
+    from othello.ai import choose_move
 
 SIZE = 50
 
@@ -72,8 +81,9 @@ class OthelloGUI:
             self.status_label.config(text="")  # Clear the status label after a valid move
             self.after_move()
         else:
-            # TODO: status_label should exist; implement if missing
-            self.status_label.config(text="Illegal move")
+            # Display illegal move message
+            if hasattr(self, 'status_label') and self.status_label:
+                self.status_label.config(text="Illegal move")
 
     def after_move(self) -> None:
         if self.vs_ai and not self.black_to_move:

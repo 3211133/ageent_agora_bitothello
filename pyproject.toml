@@ -8,6 +8,15 @@ version = "0.1.0"
 description = "Bitboard-based Othello game"
 readme = "README.md"
 requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+]
+test = [
+    "pytest>=6.0",
+]
 
 [project.scripts]
 othello = "othello.cli:play"
