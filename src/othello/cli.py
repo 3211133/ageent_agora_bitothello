@@ -134,7 +134,7 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
         my_black = True
     elif connect:
         h, p = connect.split(":")
-        sock = network.join_game(h, int(p))
+        sock = network.join_game(h, int(p), timeout=30.0)
         my_black = False
     else:
         raise ValueError("host or connect must be provided")

@@ -21,8 +21,10 @@ DIRS = {
 }
 
 # Masks to handle wrapping on edges
-NOT_A_FILE = int(0xfefefefefefefefe)
-NOT_H_FILE = int(0x7f7f7f7f7f7f7f7f)
+# A-file is leftmost column (bits 0,8,16,24,32,40,48,56)
+# H-file is rightmost column (bits 7,15,23,31,39,47,55,63)
+NOT_A_FILE = int(0x7f7f7f7f7f7f7f7f)  # ~0x8080808080808080 (mask out A-file)
+NOT_H_FILE = int(0xfefefefefefefefe)  # ~0x0101010101010101 (mask out H-file)
 
 @dataclass(frozen=True)
 class BitBoard:
@@ -72,16 +74,22 @@ class BitBoard:
 
     @staticmethod
     def _shift(bitboard: int, direction: str) -> int:
+        # Check for edge conditions BEFORE shifting to prevent wrapping
+        if direction in ('E', 'NE', 'SE'):
+            # Don't shift if any bits are in H-file
+            if bitboard & ~NOT_H_FILE:
+                return 0
+        if direction in ('W', 'NW', 'SW'):
+            # Don't shift if any bits are in A-file
+            if bitboard & ~NOT_A_FILE:
+                return 0
+        
         shift = DIRS[direction]
         # REVIEW: verify that shifting logic still works for other board sizes
         if shift > 0:
             bb = bitboard << shift
         else:
             bb = bitboard >> -shift
-        if direction in ('E', 'NE', 'SE'):
-            bb &= NOT_A_FILE
-        if direction in ('W', 'NW', 'SW'):
-            bb &= NOT_H_FILE
         return bb
 
     def legal_moves(self, player: int, opponent: int) -> int:
@@ -153,4 +161,3 @@ def parse_move(move_str: str) -> int:
     # NOTE: assumes standard 8x8 board indexing
     pos = row * BOARD_SIZE + col
     return 1 << (TOTAL_SQUARES - 1 - pos)
-
