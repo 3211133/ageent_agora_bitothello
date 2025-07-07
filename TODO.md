@@ -20,3 +20,11 @@
 - [ ] スコアボードを表示する機能を追加する
 - [ ] GUIのデザインを改善する
 - [ ] オープニングブックを読み込んでAIの初手を強化する
+- [ ] track cumulative scores between games
+- [ ] display a persistent scoreboard across sessions
+- [ ] implement get_legal_moves to return coordinates
+- [ ] status_label should exist; implement if missing
+- [ ] integrate scoreboard view in GUI
+- [ ] expose additional GUI options via CLI
+- [ ] handle network errors and retries gracefully
+- [ ] support connection timeout and error handling
