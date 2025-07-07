@@ -3,9 +3,8 @@
 # TODO: improve GUI layout and graphics
 
 import tkinter as tk
-from .board import BitBoard
+from .board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
 
-# FIXME: BOARD_SIZE is used but not imported; consider `from .board import BOARD_SIZE`
 from .ai import choose_move
 
 SIZE = 50
@@ -21,7 +20,8 @@ class OthelloGUI:
         self.canvas = tk.Canvas(self.root, width=SIZE * BOARD_SIZE, height=SIZE * BOARD_SIZE)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.handle_click)
-        # TODO: add a status_label widget for user feedback
+        self.status_label = tk.Label(self.root, text="", fg="red")
+        self.status_label.pack()
         self.draw_board()
 
     def draw_board(self) -> None:
@@ -46,10 +46,23 @@ class OthelloGUI:
             x2, y2 = x1 + 10, y1 + 10
             self.canvas.create_oval(x1, y1, x2, y2, outline="yellow")
 
+    def get_legal_moves(self, player: int, opponent: int) -> list[tuple[int, int]]:
+        """Return list of legal move coordinates for ``player``."""
+        moves = self.board.legal_moves(player, opponent)
+        result = []
+        while moves:
+            lsb = moves & -moves
+            idx = lsb.bit_length() - 1
+            pos = TOTAL_SQUARES - 1 - idx
+            row, col = divmod(pos, BOARD_SIZE)
+            result.append((row, col))
+            moves ^= lsb
+        return result
+
     def handle_click(self, event) -> None:
         col = event.x // SIZE
         row = event.y // SIZE
-        pos = row * 8 + col
+        pos = row * BOARD_SIZE + col
         move = 1 << (63 - pos)
         player = self.board.black if self.black_to_move else self.board.white
         opponent = self.board.white if self.black_to_move else self.board.black
