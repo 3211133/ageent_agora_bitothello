@@ -1,4 +1,8 @@
 import socket
+import logging
+
+# Module level logger
+logger = logging.getLogger(__name__)
 
 
 def host_game(host: str = "localhost", port: int = 9999) -> socket.socket:
@@ -26,19 +30,19 @@ def join_game(host: str = "localhost", port: int = 9999, timeout: float = 10.0) 
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
-        print(f"Connecting to {host}:{port}...")
+        logger.info(f"Connecting to {host}:{port}...")
         sock.connect((host, port))
-        print(f"Successfully connected to {host}:{port}")
+        logger.info(f"Successfully connected to {host}:{port}")
         sock.settimeout(None)  # Remove timeout after connection
         return sock
     except socket.timeout:
-        print(f"Connection timeout after {timeout} seconds")
+        logger.warning(f"Connection timeout after {timeout} seconds")
         raise
     except socket.error as e:
-        print(f"Network error while joining game: {e}")
+        logger.error(f"Network error while joining game: {e}")
         raise
     except Exception as e:
-        print(f"Unexpected error while joining game: {e}")
+        logger.error(f"Unexpected error while joining game: {e}")
         raise
 
 
@@ -47,10 +51,10 @@ def send_line(sock: socket.socket, line: str) -> None:
     try:
         sock.sendall((line + "\n").encode())
     except socket.error as e:
-        print(f"Error sending data: {e}")
+        logger.error(f"Error sending data: {e}")
         raise ConnectionError(f"Failed to send data: {e}")
     except Exception as e:
-        print(f"Unexpected error while sending: {e}")
+        logger.error(f"Unexpected error while sending: {e}")
         raise
 
 
@@ -65,14 +69,14 @@ def recv_line(sock: socket.socket) -> str:
             data += chunk
         return data.strip().decode()
     except socket.timeout:
-        print("Timeout while receiving data")
+        logger.warning("Timeout while receiving data")
         raise
     except socket.error as e:
-        print(f"Network error while receiving: {e}")
+        logger.error(f"Network error while receiving: {e}")
         raise ConnectionError(f"Failed to receive data: {e}")
     except UnicodeDecodeError as e:
-        print(f"Invalid text encoding received: {e}")
+        logger.error(f"Invalid text encoding received: {e}")
         raise
     except Exception as e:
-        print(f"Unexpected error while receiving: {e}")
+        logger.error(f"Unexpected error while receiving: {e}")
         raise
