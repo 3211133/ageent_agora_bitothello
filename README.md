@@ -42,6 +42,11 @@ move = parse_move("d3")
 game.apply_move(move)
 ```
 
+## スコアボード
+
+ゲーム終了後の勝敗は `scoreboard.json` に記録され、次回起動時にも累積結果を保持します。
+CLI と GUI の両方で対局終了時に現在のスコアボードが表示されます。
+
 ## テスト
 
 ```bash

@@ -17,13 +17,13 @@
 - [x] 評価関数を改良してAIを強化する
 - [x] 持ち時間制のタイマー機能を追加する
 - [ ] 盤面サイズを変更できるようにする
-- [ ] スコアボードを表示する機能を追加する
+- [x] スコアボードを表示する機能を追加する
 - [ ] GUIのデザインを改善する
 - [ ] オープニングブックを読み込んでAIの初手を強化する
-- [ ] track cumulative scores between games
-- [ ] display a persistent scoreboard across sessions
-- [ ] implement get_legal_moves to return coordinates
-- [ ] status_label should exist; implement if missing
-- [ ] integrate scoreboard view in GUI
+- [x] track cumulative scores between games
+- [x] display a persistent scoreboard across sessions
+- [x] implement get_legal_moves to return coordinates
+- [x] status_label should exist; implement if missing
+- [x] integrate scoreboard view in GUI
 - [ ] expose additional GUI options via CLI
 - [ ] implement robust network error handling with retries and timeouts

@@ -4,6 +4,7 @@ from .board import BitBoard, parse_move
 from .ai import choose_move
 from . import network
 from .game import Game, save_state, load_state
+from . import scoreboard
 import argparse
 import socket
 import time
@@ -121,7 +122,9 @@ def run_game(
     b_count = bin(game.board.black).count("1")
     w_count = bin(game.board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
-    # TODO: display a persistent scoreboard across sessions
+    winner = "Black" if b_count > w_count else "White" if w_count > b_count else None
+    scores = scoreboard.update_scores(winner)
+    print(scoreboard.format_scores(scores))
     return game.board
 
 
@@ -177,6 +180,9 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
     b_count = bin(game.board.black).count("1")
     w_count = bin(game.board.white).count("1")
     print(f"Final score - Black: {b_count}, White: {w_count}")
+    winner = "Black" if b_count > w_count else "White" if w_count > b_count else None
+    scores = scoreboard.update_scores(winner)
+    print(scoreboard.format_scores(scores))
     return game.board
 
 
