@@ -14,7 +14,7 @@ def load_scores() -> dict:
         try:
             with open(SCOREBOARD_PATH) as f:
                 return json.load(f)
-        except Exception:
+        except (json.JSONDecodeError, OSError):
             return _default_scores()
     return _default_scores()
 
