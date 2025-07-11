@@ -11,7 +11,7 @@ pip install -e .
 # 対戦を開始
 othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard,expert}] [--time-limit SECS] [--host HOST:PORT | --connect HOST:PORT]
 # GUI 版を起動
-othello-gui
+othello-gui [--vs-ai] [--ai-level {easy,hard,expert}]
 ```
 
 GUI では合法手のハイライトと、無効な操作時にメッセージを表示するステータスラベルを追加しています。

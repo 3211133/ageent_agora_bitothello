@@ -4,6 +4,7 @@
 
 import tkinter as tk
 from tkinter import messagebox
+import argparse
 
 # Handle both relative and absolute imports for direct execution
 try:
@@ -128,9 +129,26 @@ class OthelloGUI:
 
 
 def play_gui(vs_ai: bool = False, ai_level: str = "easy") -> None:
-    """Entry point for playing the GUI version."""
+    """Launch the GUI with the provided options."""
     OthelloGUI(vs_ai, ai_level).run()
-# TODO: expose additional GUI options via CLI
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Entry point for the ``othello-gui`` command."""
+    parser = argparse.ArgumentParser(description="Play Othello with a GUI")
+    parser.add_argument(
+        "--vs-ai", action="store_true", help="Play against the computer"
+    )
+    parser.add_argument(
+        "--ai-level",
+        choices=["easy", "hard", "expert"],
+        default="easy",
+        help="AI difficulty level",
+    )
+    args = parser.parse_args(argv)
+    play_gui(vs_ai=args.vs_ai, ai_level=args.ai_level)
+
+# CHANGED: command line options are now parsed when executing as a script
 
 if __name__ == "__main__":
-    play_gui(vs_ai=True)
+    main()
