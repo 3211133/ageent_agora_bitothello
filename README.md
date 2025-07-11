@@ -50,9 +50,9 @@ CLI と GUI の両方で対局終了時に現在のスコアボードが表示�
 ## テスト
 
 ```bash
-pytest
+pytest --cov=src
 ```
 
 ## 継続的インテグレーション
 
-GitHub Actions を用いて `pytest` を自動実行します。`main` ブランチへの push または PR 作成時にテストが走ります。
+GitHub Actions を用いて `pytest` を自動実行し、カバレッジも測定します。`main` ブランチへの push または PR 作成時にテストとカバレッジ計算が走ります。
