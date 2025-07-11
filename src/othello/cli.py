@@ -26,10 +26,7 @@ def run_game(
     ``ai_vs_ai`` takes precedence over ``vs_ai``.
     ``ai_level`` specifies the AI difficulty (``"easy"``, ``"hard`` or ``"expert"``).
     """
-    try:
-        board = BitBoard.initial(size)
-    except TypeError:
-        board = BitBoard.initial()
+    board = BitBoard.initial(size)
     game = Game(board=board, black_to_move=True)
     time_left = {True: time_limit, False: time_limit} if time_limit is not None else None
 
