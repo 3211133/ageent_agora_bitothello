@@ -1,6 +1,6 @@
 """Command line interface for playing Othello."""
 
-from .board import BitBoard, parse_move
+from .board import BitBoard, parse_move, DEFAULT_BOARD_SIZE
 from .ai import choose_move
 from . import network
 from .game import Game, save_state, load_state
@@ -17,6 +17,7 @@ def run_game(
     ai_vs_ai: bool = False,
     ai_level: str = "easy",
     time_limit: float | None = None,
+    size: int = DEFAULT_BOARD_SIZE,
 ) -> BitBoard:
     """Run an interactive game in the terminal and return the final board.
 
@@ -25,7 +26,11 @@ def run_game(
     ``ai_vs_ai`` takes precedence over ``vs_ai``.
     ``ai_level`` specifies the AI difficulty (``"easy"``, ``"hard`` or ``"expert"``).
     """
-    game = Game(board=BitBoard.initial(), black_to_move=True)
+    try:
+        board = BitBoard.initial(size)
+    except TypeError:
+        board = BitBoard.initial()
+    game = Game(board=board, black_to_move=True)
     time_left = {True: time_limit, False: time_limit} if time_limit is not None else None
 
     def deduct(player: bool, start: float) -> bool:
@@ -110,7 +115,7 @@ def run_game(
                 break
             continue
         try:
-            move = parse_move(move_str)
+            move = parse_move(move_str, size)
             game.apply_move(move)
         except ValueError as e:
             print(f"Illegal move: {e}. Please try again.")
@@ -128,7 +133,7 @@ def run_game(
     return game.board
 
 
-def run_network_game(host: str | None = None, connect: str | None = None) -> BitBoard:
+def run_network_game(host: str | None = None, connect: str | None = None, size: int = DEFAULT_BOARD_SIZE) -> BitBoard:
     """Play a game against a remote opponent."""
     # WARNING: no encryption or authentication implemented
     if host:
@@ -142,7 +147,11 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
     else:
         raise ValueError("host or connect must be provided")
 
-    game = Game(board=BitBoard.initial(), black_to_move=True)
+    try:
+        board = BitBoard.initial(size)
+    except TypeError:
+        board = BitBoard.initial()
+    game = Game(board=board, black_to_move=True)
 
     while True:
         print(game.board)
@@ -166,7 +175,7 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
             if move_str.lower() == "q":
                 network.send_line(sock, "QUIT")
                 break
-            move = parse_move(move_str)
+            move = parse_move(move_str, size)
             network.send_line(sock, move_str)
         else:
             print("Waiting for opponent...")
@@ -174,7 +183,7 @@ def run_network_game(host: str | None = None, connect: str | None = None) -> Bit
             if msg == "QUIT":
                 print("Opponent quit.")
                 break
-            move = parse_move(msg)
+            move = parse_move(msg, size)
         game.apply_move(move)
 
     b_count = bin(game.board.black).count("1")
@@ -208,17 +217,24 @@ def main() -> None:
         type=float,
         help="Total time per player in seconds",
     )
+    parser.add_argument(
+        "--size",
+        type=int,
+        default=DEFAULT_BOARD_SIZE,
+        help="Board size (even number)",
+    )
     parser.add_argument("--host", help="Host a network game at host:port")
     parser.add_argument("--connect", help="Connect to a network game at host:port")
     args = parser.parse_args()
     if args.host or args.connect:
-        run_network_game(host=args.host, connect=args.connect)
+        run_network_game(host=args.host, connect=args.connect, size=args.size)
     else:
         run_game(
             vs_ai=args.ai,
             ai_vs_ai=args.ai_vs_ai,
             ai_level=args.ai_level,
             time_limit=args.time_limit,
+            size=args.size,
         )
 
 # Backward compatible entry point
