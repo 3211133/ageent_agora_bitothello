@@ -3,11 +3,13 @@
 # TODO: improve GUI layout and graphics
 
 import tkinter as tk
+from tkinter import messagebox
 
 # Handle both relative and absolute imports for direct execution
 try:
     from .board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
     from .ai import choose_move
+    from . import scoreboard
 except (ImportError, ValueError):
     # Direct execution fallback
     import sys
@@ -15,6 +17,7 @@ except (ImportError, ValueError):
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
     from othello.board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
     from othello.ai import choose_move
+    import scoreboard
 
 SIZE = 50
 
@@ -112,7 +115,9 @@ class OthelloGUI:
                     fill="red",
                     font=("Helvetica", 20),
                 )
-                # TODO: integrate scoreboard view in GUI
+                winner = "Black" if b > w else "White" if w > b else None
+                scores = scoreboard.update_scores(winner)
+                messagebox.showinfo("Scoreboard", scoreboard.format_scores(scores))
                 self.canvas.unbind("<Button-1>")
                 return
             if self.vs_ai and not self.black_to_move:
