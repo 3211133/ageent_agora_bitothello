@@ -25,5 +25,5 @@
 - [x] implement get_legal_moves to return coordinates
 - [x] status_label should exist; implement if missing
 - [x] integrate scoreboard view in GUI
-- [ ] expose additional GUI options via CLI
+- [x] expose additional GUI options via CLI
 - [ ] implement robust network error handling with retries and timeouts

@@ -20,7 +20,7 @@ test = [
 
 [project.scripts]
 othello = "othello.cli:play"
-othello-gui = "othello.gui:play_gui"
+othello-gui = "othello.gui:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
