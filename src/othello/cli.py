@@ -133,17 +133,58 @@ def run_game(
     return game.board
 
 
+def _parse_host_port(host_port: str) -> tuple[str, int]:
+    """Safely parse host:port string with validation."""
+    if not host_port or ":" not in host_port:
+        raise ValueError("Invalid host:port format. Expected 'host:port'")
+    
+    # Use rsplit to handle IPv6 addresses
+    parts = host_port.rsplit(":", 1)
+    if len(parts) != 2:
+        raise ValueError("Invalid host:port format. Expected 'host:port'")
+    
+    host, port_str = parts
+    
+    # Validate host is not empty
+    if not host.strip():
+        raise ValueError("Host cannot be empty")
+    
+    # Validate and parse port
+    try:
+        port = int(port_str)
+        if not (1 <= port <= 65535):
+            raise ValueError(f"Port {port} out of valid range (1-65535)")
+        return host.strip(), port
+    except ValueError as e:
+        if "invalid literal" in str(e):
+            raise ValueError(f"Invalid port number: {port_str}")
+        raise
+
+
 def run_network_game(host: str | None = None, connect: str | None = None, size: int = DEFAULT_BOARD_SIZE) -> BitBoard:
-    """Play a game against a remote opponent."""
-    # WARNING: no encryption or authentication implemented
+    """Play a game against a remote opponent.
+    
+    SECURITY WARNING: Network communication is unencrypted and unauthenticated.
+    - All game data is transmitted in plaintext
+    - Anyone can join game sessions without authorization
+    - Communications can be intercepted and modified
+    - Only use on trusted networks
+    - For production use, implement TLS encryption and authentication
+    """
     if host:
-        h, p = host.split(":")
-        sock = network.host_game(h, int(p))
-        my_black = True
+        try:
+            h, p = _parse_host_port(host)
+            sock = network.host_game(h, p)
+            my_black = True
+        except ValueError as e:
+            raise ValueError(f"Invalid host format: {e}")
     elif connect:
-        h, p = connect.split(":")
-        sock = network.join_game(h, int(p), timeout=30.0)
-        my_black = False
+        try:
+            h, p = _parse_host_port(connect)
+            sock = network.join_game(h, p, timeout=30.0)
+            my_black = False
+        except ValueError as e:
+            raise ValueError(f"Invalid connect format: {e}")
     else:
         raise ValueError("host or connect must be provided")
 
