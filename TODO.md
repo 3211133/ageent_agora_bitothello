@@ -27,3 +27,4 @@
 - [x] integrate scoreboard view in GUI
 - [x] expose additional GUI options via CLI
 - [x] implement robust network error handling with retries and timeouts
+- [ ] AI対AIの自動対戦モードを実装する
