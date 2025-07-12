@@ -16,6 +16,8 @@ class Game:
     black_to_move: bool = True
     history: list[tuple[BitBoard, bool]] = field(default_factory=list)
     future: list[tuple[BitBoard, bool]] = field(default_factory=list)
+    max_history_size: int = 100  # Maximum number of moves to keep in history
+    max_future_size: int = 50    # Maximum number of undo states to keep in future stack
 
     def __post_init__(self) -> None:
         if not self.history:
@@ -30,13 +32,26 @@ class Game:
         self.board = self.board.apply_move(move, self.black_to_move)
         self.black_to_move = not self.black_to_move
         self.history.append((self.board, self.black_to_move))
+        
+        # Bound history size to prevent memory leaks
+        if len(self.history) > self.max_history_size:
+            # Remove oldest entries, but keep at least one for undo functionality
+            entries_to_remove = len(self.history) - self.max_history_size
+            self.history = self.history[entries_to_remove:]
+        
         self.future.clear()
 
     def undo(self) -> bool:
         if len(self.history) <= 1:
             return False
         self.future.append(self.history.pop())
-        # NOTE: future stack grows with undos; consider bounding its size
+        
+        # Bound future stack size to prevent memory leaks from excessive undos
+        if len(self.future) > self.max_future_size:
+            # Remove oldest redo states
+            entries_to_remove = len(self.future) - self.max_future_size
+            self.future = self.future[entries_to_remove:]
+        
         self.board, self.black_to_move = self.history[-1]
         return True
 
@@ -44,7 +59,6 @@ class Game:
         if not self.future:
             return False
         self.board, self.black_to_move = self.future.pop()
-        # REVIEW: ensure redo correctly restores future after branching
         self.history.append((self.board, self.black_to_move))
         return True
 
