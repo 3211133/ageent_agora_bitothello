@@ -19,10 +19,9 @@ def _load_opening_book() -> dict[str, str]:
             _opening_book = {}
     return _opening_book
 
-# Positional weights used for the evaluation function. Corners are highly
-# valued while squares adjacent to corners are penalised. The values were
-# chosen heuristically.
-_WEIGHTS = [
+# Default positional weights for 8x8 board. Corners are highly valued while 
+# squares adjacent to corners are penalised. Values chosen heuristically.
+_DEFAULT_WEIGHTS_8X8 = [
     100, -20, 10, 5, 5, 10, -20, 100,
     -20, -50, -2, -2, -2, -2, -50, -20,
     10, -2, 5, 1, 1, 5, -2, 10,
@@ -33,23 +32,111 @@ _WEIGHTS = [
     100, -20, 10, 5, 5, 10, -20, 100,
 ]
 
+# Cache for dynamically generated weight tables
+_weight_cache: dict[int, list[int]] = {}
+
+
+def _generate_weights(size: int) -> list[int]:
+    """Generate positional weights for a board of given size.
+    
+    Uses the same strategic principles as the 8x8 board:
+    - Corners are highly valued (100)
+    - Squares adjacent to corners are penalized (-20 to -50)  
+    - Edge squares have moderate value (5-10)
+    - Center squares have neutral to slightly positive value (0-5)
+    
+    Args:
+        size: Board size (must be even, 4 <= size <= 26)
+        
+    Returns:
+        List of weights for each square (row-major order)
+    """
+    if size in _weight_cache:
+        return _weight_cache[size]
+    
+    if size == 8:
+        _weight_cache[size] = _DEFAULT_WEIGHTS_8X8[:]
+        return _weight_cache[size]
+    
+    weights = [0] * (size * size)
+    
+    for row in range(size):
+        for col in range(size):
+            idx = row * size + col
+            
+            # Distance from edges
+            dist_from_edge = min(row, col, size - 1 - row, size - 1 - col)
+            
+            # Corner squares (highest value)
+            if (row == 0 or row == size - 1) and (col == 0 or col == size - 1):
+                weights[idx] = 100
+            
+            # Squares adjacent to corners (penalized)
+            elif dist_from_edge == 0 and (
+                (row <= 1 or row >= size - 2) or (col <= 1 or col >= size - 2)
+            ):
+                # Adjacent to corner
+                if ((row == 0 or row == size - 1) and (col == 1 or col == size - 2)) or \
+                   ((col == 0 or col == size - 1) and (row == 1 or row == size - 2)):
+                    weights[idx] = -20
+                # Diagonal to corner  
+                elif (row == 1 or row == size - 2) and (col == 1 or col == size - 2):
+                    weights[idx] = -50
+                else:
+                    weights[idx] = -2
+            
+            # Edge squares (moderate value)
+            elif dist_from_edge == 0:
+                weights[idx] = 10 if size >= 6 else 5
+            
+            # Second row/column from edge
+            elif dist_from_edge == 1:
+                if (row == 1 or row == size - 2) and (col == 1 or col == size - 2):
+                    weights[idx] = -2  # Near corner penalty
+                else:
+                    weights[idx] = 5 if size >= 8 else 1
+            
+            # Inner squares (neutral to slightly positive)
+            else:
+                weights[idx] = min(dist_from_edge, 5)
+    
+    _weight_cache[size] = weights
+    return weights
+
 
 def _evaluate(board: BitBoard) -> int:
-    """Return a positional evaluation of ``board`` from black's perspective."""
-
+    """Return a positional evaluation of ``board`` from black's perspective.
+    
+    Uses board size-specific positional weights that follow strategic principles:
+    corners are highly valued, adjacent squares are penalized, edges have 
+    moderate value, and center squares are neutral to slightly positive.
+    
+    Args:
+        board: BitBoard to evaluate
+        
+    Returns:
+        Score from black's perspective (positive favors black)
+    """
+    weights = _generate_weights(board.size)
+    total_squares = board.size * board.size
+    
     score = 0
     bb = board.black
     while bb:
         lsb = bb & -bb
-        idx = lsb.bit_length() - 1
-        score += _WEIGHTS[63 - idx]
+        bit_position = lsb.bit_length() - 1
+        # Convert bit position to array index (MSB first)
+        weight_idx = total_squares - 1 - bit_position
+        score += weights[weight_idx]
         bb ^= lsb
 
     bb = board.white
     while bb:
         lsb = bb & -bb
-        idx = lsb.bit_length() - 1
-        score -= _WEIGHTS[63 - idx]
+        bit_position = lsb.bit_length() - 1
+        # Convert bit position to array index (MSB first)  
+        weight_idx = total_squares - 1 - bit_position
+        score -= weights[weight_idx]
         bb ^= lsb
 
     return score
@@ -82,14 +169,15 @@ def choose_move(board: BitBoard, black_to_move: bool, level: str = "easy") -> in
     if legal == 0:
         return 0
 
-    # Consult opening book for known positions
-    book = _load_opening_book()
-    key = f"{board.black}-{board.white}-{1 if black_to_move else 0}"
-    move_str = book.get(key)
-    if move_str:
-        move = parse_move(move_str, board.size)
-        if move & legal:
-            return move
+    # Consult opening book for known positions (8x8 boards only)
+    if board.size == 8:
+        book = _load_opening_book()
+        key = f"{board.black}-{board.white}-{1 if black_to_move else 0}"
+        move_str = book.get(key)
+        if move_str:
+            move = parse_move(move_str, board.size)
+            if move & legal:
+                return move
 
     if level == "hard":
         best_moves = []
