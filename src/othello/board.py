@@ -38,7 +38,28 @@ class BitBoard:
 
     @staticmethod
     def initial(size: int = DEFAULT_BOARD_SIZE) -> "BitBoard":
-        """Return a board in the standard initial Othello setup."""
+        """Return a board in the standard initial Othello setup.
+        
+        Args:
+            size: Board size (must be even and within reasonable limits)
+            
+        Returns:
+            BitBoard with initial Othello setup
+            
+        Raises:
+            ValueError: If size is invalid
+            TypeError: If size is not an integer
+        """
+        # Input validation
+        if not isinstance(size, int):
+            raise TypeError(f"Size must be an integer, got {type(size).__name__}")
+        
+        if size < 4 or size > 26:
+            raise ValueError(f"Board size {size} out of valid range (4-26)")
+        
+        if size % 2 != 0:
+            raise ValueError(f"Board size {size} must be even")
+        
         mid = size // 2
         total = size * size
         def pos(r: int, c: int) -> int:
@@ -189,9 +210,75 @@ class BitBoard:
 
 
 def parse_move(move_str: str, size: int = DEFAULT_BOARD_SIZE) -> int:
-    """Return bit mask corresponding to ``move_str`` such as 'd3'."""
-    col = ord(move_str[0].lower()) - ord('a')
-    row = int(move_str[1:]) - 1
+    """Return bit mask corresponding to ``move_str`` such as 'd3'.
+    
+    Args:
+        move_str: Move in algebraic notation (e.g., 'd3', 'A1')
+        size: Board size for bounds validation
+        
+    Returns:
+        Bit mask for the move position
+        
+    Raises:
+        ValueError: If move format is invalid or out of bounds
+        TypeError: If inputs are not of expected types
+    """
+    # Input type validation
+    if not isinstance(move_str, str):
+        raise TypeError(f"Move must be a string, got {type(move_str).__name__}")
+    
+    if not isinstance(size, int):
+        raise TypeError(f"Size must be an integer, got {type(size).__name__}")
+    
+    # Size bounds validation
+    if size < 4 or size > 26:  # Reasonable board size limits
+        raise ValueError(f"Board size {size} out of valid range (4-26)")
+    
+    if size % 2 != 0:
+        raise ValueError(f"Board size {size} must be even")
+    
+    # Move string validation
+    if not move_str or not move_str.strip():
+        raise ValueError("Move string cannot be empty")
+    
+    move_str = move_str.strip().lower()
+    
+    # Format validation: should be letter + number(s)
+    if len(move_str) < 2:
+        raise ValueError(f"Invalid move format '{move_str}'. Expected format: letter + number (e.g., 'd3')")
+    
+    # Validate first character is a letter
+    if not move_str[0].isalpha():
+        raise ValueError(f"Invalid move format '{move_str}'. First character must be a letter")
+    
+    # Validate remaining characters are digits
+    if not move_str[1:].isdigit():
+        raise ValueError(f"Invalid move format '{move_str}'. Row must be a number")
+    
+    # Parse column (letter)
+    col_char = move_str[0]
+    col = ord(col_char) - ord('a')
+    
+    # Validate column bounds
+    if col < 0 or col >= size:
+        max_col = chr(ord('a') + size - 1)
+        raise ValueError(f"Column '{col_char}' out of bounds. Valid columns: a-{max_col}")
+    
+    # Parse row (number)
+    try:
+        row = int(move_str[1:]) - 1  # Convert to 0-based
+    except ValueError:
+        raise ValueError(f"Invalid row number in '{move_str}'")
+    
+    # Validate row bounds
+    if row < 0 or row >= size:
+        raise ValueError(f"Row {row + 1} out of bounds. Valid rows: 1-{size}")
+    
+    # Calculate position and validate
     pos = row * size + col
     total = size * size
+    
+    if pos >= total:
+        raise ValueError(f"Position calculation error: {pos} >= {total}")
+    
     return 1 << (total - 1 - pos)
