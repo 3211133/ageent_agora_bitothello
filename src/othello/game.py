@@ -167,7 +167,7 @@ def load_state(path: str | Path = "othello.sav") -> tuple[BitBoard, bool]:
         raise OSError(f"Failed to load game state: {e}")
     
     if len(lines) != 3:
-        raise ValueError("Invalid save file format")
+        raise ValueError(f"Invalid save file format: expected 3 lines, got {len(lines)}")
     
     try:
         board = BitBoard(int(lines[0]), int(lines[1]))
