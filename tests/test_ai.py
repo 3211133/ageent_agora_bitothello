@@ -1,5 +1,6 @@
 import random
 import sys, os
+import json
 import pytest
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -112,4 +113,19 @@ def test_ai_vs_ai_respects_difficulty(monkeypatch):
     assert easy_move == parse_move("d7")
     assert hard_move == parse_move("f5")
     assert expert_move == parse_move("f6")
+
+
+def test_opening_book_override(tmp_path, monkeypatch):
+    """choose_move should consult the opening book when available."""
+    board = BitBoard.initial()
+    book = {f"{board.black}-{board.white}-1": "d3"}
+    path = tmp_path / "book.json"
+    path.write_text(json.dumps(book))
+
+    import othello.ai as ai_mod
+    monkeypatch.setattr(ai_mod, "_BOOK_PATH", str(path))
+    ai_mod._opening_book = None
+
+    move = ai_mod.choose_move(board, True, level="expert")
+    assert move == parse_move("d3")
 

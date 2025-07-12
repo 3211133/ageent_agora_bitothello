@@ -1,7 +1,23 @@
+import json
+import os
 import random
-from .board import BitBoard
+from .board import BitBoard, parse_move
 
-# TODO: implement an opening book for stronger openings
+# Opening book loaded from ``opening_book.json`` if available
+_BOOK_PATH = os.path.join(os.path.dirname(__file__), "opening_book.json")
+_opening_book: dict[str, str] | None = None
+
+
+def _load_opening_book() -> dict[str, str]:
+    """Load opening book from JSON file if not already loaded."""
+    global _opening_book
+    if _opening_book is None:
+        try:
+            with open(_BOOK_PATH) as f:
+                _opening_book = json.load(f)
+        except OSError:
+            _opening_book = {}
+    return _opening_book
 
 # Positional weights used for the evaluation function. Corners are highly
 # valued while squares adjacent to corners are penalised. The values were
@@ -65,6 +81,15 @@ def choose_move(board: BitBoard, black_to_move: bool, level: str = "easy") -> in
     legal = board.legal_moves(player, opponent)
     if legal == 0:
         return 0
+
+    # Consult opening book for known positions
+    book = _load_opening_book()
+    key = f"{board.black}-{board.white}-{1 if black_to_move else 0}"
+    move_str = book.get(key)
+    if move_str:
+        move = parse_move(move_str, board.size)
+        if move & legal:
+            return move
 
     if level == "hard":
         best_moves = []
