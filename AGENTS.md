@@ -25,3 +25,6 @@
 6. **テストの実行**
    - コード変更後は `pytest` を実行してテストが通ることを確認する。
    - GitHub Actions による CI でもテストが自動実行される。
+7. **pull requestの作成**
+   - GitHub copilotに対してのコメント指示を冒頭に挿入する。
+      - pull_request_template.mdを参照する
