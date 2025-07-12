@@ -49,7 +49,7 @@ class OthelloGUI:
             for col in range(self.size):
                 x1, y1 = col * SIZE, row * SIZE
                 x2, y2 = x1 + SIZE, y1 + SIZE
-                color = "#197b30" if (row + col) % 2 == 0 else "#169c3c"
+                color = "#006400" if (row + col) % 2 == 0 else "#8FBC8F"
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
                 total = self.size * self.size
                 bit = 1 << (total - 1 - (row * self.size + col))
