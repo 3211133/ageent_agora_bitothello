@@ -18,7 +18,7 @@
 - [x] 持ち時間制のタイマー機能を追加する
 - [x] 盤面サイズを変更できるようにする
 - [x] スコアボードを表示する機能を追加する
-- [ ] GUIのデザインを改善する
+- [x] GUIのデザインを改善する
 - [ ] オープニングブックを読み込んでAIの初手を強化する
 - [x] track cumulative scores between games
 - [x] display a persistent scoreboard across sessions

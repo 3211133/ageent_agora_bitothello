@@ -1,6 +1,8 @@
 """Simple Tkinter based GUI for playing Othello."""
 
-# TODO: improve GUI layout and graphics
+# NOTE: basic GUI implemented with Tkinter. The design is intentionally
+# minimal but should remain readable. Further improvements to the colour
+# scheme and layout are encouraged.
 
 import tkinter as tk
 from tkinter import messagebox
@@ -35,6 +37,9 @@ class OthelloGUI:
         self.canvas.bind("<Button-1>", self.handle_click)
         self.status_label = tk.Label(self.root, text="", fg="red")
         self.status_label.pack()
+        scores_text = "".join(scoreboard.format_scores(scoreboard.load_scores()))
+        self.score_label = tk.Label(self.root, text=scores_text)
+        self.score_label.pack()
         self.size = size
         self.draw_board()
 
@@ -44,7 +49,8 @@ class OthelloGUI:
             for col in range(self.size):
                 x1, y1 = col * SIZE, row * SIZE
                 x2, y2 = x1 + SIZE, y1 + SIZE
-                self.canvas.create_rectangle(x1, y1, x2, y2, fill="green")
+                color = "#197b30" if (row + col) % 2 == 0 else "#169c3c"
+                self.canvas.create_rectangle(x1, y1, x2, y2, fill=color, outline="black")
                 total = self.size * self.size
                 bit = 1 << (total - 1 - (row * self.size + col))
                 if self.board.black & bit:
@@ -122,7 +128,8 @@ class OthelloGUI:
                 )
                 winner = "Black" if b > w else "White" if w > b else None
                 scores = scoreboard.update_scores(winner)
-                messagebox.showinfo("Scoreboard", scoreboard.format_scores(scores))
+                self.score_label.config(text="".join(scoreboard.format_scores(scores)))
+                messagebox.showinfo("Scoreboard", "".join(scoreboard.format_scores(scores)))
                 self.canvas.unbind("<Button-1>")
                 return
             if self.vs_ai and not self.black_to_move:
