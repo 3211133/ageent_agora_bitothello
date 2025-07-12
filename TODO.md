@@ -19,7 +19,7 @@
 - [x] 盤面サイズを変更できるようにする
 - [x] スコアボードを表示する機能を追加する
 - [x] GUIのデザインを改善する
-- [ ] オープニングブックを読み込んでAIの初手を強化する
+- [x] オープニングブックを読み込んでAIの初手を強化する
 - [x] track cumulative scores between games
 - [x] display a persistent scoreboard across sessions
 - [x] implement get_legal_moves to return coordinates
