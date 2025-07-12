@@ -11,6 +11,11 @@ def test_save_load(tmp_path):
     # Use just the filename - the secure implementation will save to saves/ directory
     filename = "test_game.sav"
     save_state(board, True, filename)
+    
+    # Verify file is created in saves directory (security verification)
+    from pathlib import Path
+    assert (Path('saves') / filename).exists()
+    
     loaded_board, black_to_move = load_state(filename)
     assert loaded_board == board
     assert black_to_move is True

@@ -48,9 +48,9 @@ class TestPathTraversalSecurity:
         """Test that path traversal attacks are blocked."""
         attack_cases = [
             '../../../etc/passwd',
-            '..\\..\\windows\\system32\\config\\sam',
+            '..\\\\..\\\\windows\\\\system32\\\\config\\\\sam',
             '/etc/passwd',
-            'C:\\Windows\\System32\\config\\sam',
+            'C:\\\\Windows\\\\System32\\\\config\\\\sam',
             '....//....//etc/passwd',
             '../config/database.yml',
             '../../home/user/.ssh/id_rsa',
@@ -75,9 +75,9 @@ class TestPathTraversalSecurity:
     
     def test_empty_filename_blocked(self):
         """Test that empty filenames are blocked."""
-        empty_cases = ['', '   ', None]
+        empty_cases = ['', '   ']
         
-        for empty in empty_cases[:2]:  # Skip None for now
+        for empty in empty_cases:
             with pytest.raises(ValueError, match="Filename cannot be empty"):
                 _validate_save_path(empty)
     
@@ -122,7 +122,7 @@ class TestPathTraversalSecurity:
         attack_paths = [
             '../../../evil.sav',
             '/tmp/evil.sav',
-            'C:\\evil.sav'
+            'C:\\\\evil.sav'
         ]
         
         for attack_path in attack_paths:
@@ -134,7 +134,7 @@ class TestPathTraversalSecurity:
         attack_paths = [
             '../../../etc/passwd',
             '/etc/passwd',
-            'C:\\Windows\\System32\\config\\sam'
+            'C:\\\\Windows\\\\System32\\\\config\\\\sam'
         ]
         
         for attack_path in attack_paths:
