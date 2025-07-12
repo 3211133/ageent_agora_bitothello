@@ -8,7 +8,7 @@ import argparse
 
 # Handle both relative and absolute imports for direct execution
 try:
-    from .board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
+    from .board import BitBoard, DEFAULT_BOARD_SIZE
     from .ai import choose_move
     from . import scoreboard
 except (ImportError, ValueError):
@@ -16,35 +16,37 @@ except (ImportError, ValueError):
     import sys
     import os
     sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-    from othello.board import BitBoard, BOARD_SIZE, TOTAL_SQUARES
+    from othello.board import BitBoard, DEFAULT_BOARD_SIZE
     from othello.ai import choose_move
     import scoreboard
 
 SIZE = 50
 
 class OthelloGUI:
-    def __init__(self, vs_ai: bool = False, ai_level: str = "easy") -> None:
+    def __init__(self, vs_ai: bool = False, ai_level: str = "easy", size: int = DEFAULT_BOARD_SIZE) -> None:
         self.vs_ai = vs_ai
         self.ai_level = ai_level
-        self.board = BitBoard.initial()
+        self.board = BitBoard.initial(size)
         self.black_to_move = True
         self.root = tk.Tk()
         self.root.title("Othello")
-        self.canvas = tk.Canvas(self.root, width=SIZE * BOARD_SIZE, height=SIZE * BOARD_SIZE)
+        self.canvas = tk.Canvas(self.root, width=SIZE * size, height=SIZE * size)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.handle_click)
         self.status_label = tk.Label(self.root, text="", fg="red")
         self.status_label.pack()
+        self.size = size
         self.draw_board()
 
     def draw_board(self) -> None:
         self.canvas.delete("all")
-        for row in range(BOARD_SIZE):
-            for col in range(BOARD_SIZE):
+        for row in range(self.size):
+            for col in range(self.size):
                 x1, y1 = col * SIZE, row * SIZE
                 x2, y2 = x1 + SIZE, y1 + SIZE
                 self.canvas.create_rectangle(x1, y1, x2, y2, fill="green")
-                bit = 1 << (63 - (row * BOARD_SIZE + col))
+                total = self.size * self.size
+                bit = 1 << (total - 1 - (row * self.size + col))
                 if self.board.black & bit:
                     self.canvas.create_oval(x1 + 5, y1 + 5, x2 - 5, y2 - 5, fill="black")
                 elif self.board.white & bit:
@@ -66,8 +68,9 @@ class OthelloGUI:
         while moves:
             lsb = moves & -moves
             idx = lsb.bit_length() - 1
-            pos = TOTAL_SQUARES - 1 - idx
-            row, col = divmod(pos, BOARD_SIZE)
+            total = self.board.size * self.board.size
+            pos = total - 1 - idx
+            row, col = divmod(pos, self.board.size)
             result.append((row, col))
             moves ^= lsb
         return result
@@ -75,8 +78,9 @@ class OthelloGUI:
     def handle_click(self, event) -> None:
         col = event.x // SIZE
         row = event.y // SIZE
-        pos = row * BOARD_SIZE + col
-        move = 1 << (63 - pos)
+        total = self.board.size * self.board.size
+        pos = row * self.board.size + col
+        move = 1 << (total - 1 - pos)
         player = self.board.black if self.black_to_move else self.board.white
         opponent = self.board.white if self.black_to_move else self.board.black
         if move & self.board.legal_moves(player, opponent):
@@ -128,9 +132,9 @@ class OthelloGUI:
         self.root.mainloop()
 
 
-def play_gui(vs_ai: bool = False, ai_level: str = "easy") -> None:
+def play_gui(vs_ai: bool = False, ai_level: str = "easy", size: int = DEFAULT_BOARD_SIZE) -> None:
     """Launch the GUI with the provided options."""
-    OthelloGUI(vs_ai, ai_level).run()
+    OthelloGUI(vs_ai, ai_level, size=size).run()
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -145,8 +149,14 @@ def main(argv: list[str] | None = None) -> None:
         default="easy",
         help="AI difficulty level",
     )
+    parser.add_argument(
+        "--size",
+        type=int,
+        default=DEFAULT_BOARD_SIZE,
+        help="Board size (even number)",
+    )
     args = parser.parse_args(argv)
-    play_gui(vs_ai=args.vs_ai, ai_level=args.ai_level)
+    play_gui(vs_ai=args.vs_ai, ai_level=args.ai_level, size=args.size)
 
 # CHANGED: command line options are now parsed when executing as a script
 

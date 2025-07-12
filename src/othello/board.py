@@ -4,11 +4,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 # Board constants
-# TODO: support configurable board sizes
-BOARD_SIZE = 8
-TOTAL_SQUARES = BOARD_SIZE * BOARD_SIZE
+# CHANGED: support configurable board sizes via ``DEFAULT_BOARD_SIZE``.
+DEFAULT_BOARD_SIZE = 8
 
-# Direction shifts for bitboard operations
+# Direction keys used for shifting
+DIR_KEYS = ("N", "S", "E", "W", "NE", "NW", "SE", "SW")
+
+# Masks for the default 8x8 board (used for backwards compatibility)
+NOT_A_FILE_DEFAULT = int(0x7F7F7F7F7F7F7F7F)
+NOT_H_FILE_DEFAULT = int(0xFEFEFEFEFEFEFEFE)
+
+# Backwards compatibility constants for the default 8x8 board
 DIRS = {
     'N': 8,
     'S': -8,
@@ -19,50 +25,53 @@ DIRS = {
     'SE': -9,
     'SW': -7,
 }
-
-# Masks to handle wrapping on edges
-# A-file is leftmost column (bits 0,8,16,24,32,40,48,56)
-# H-file is rightmost column (bits 7,15,23,31,39,47,55,63)
-NOT_A_FILE = int(0x7f7f7f7f7f7f7f7f)  # ~0x8080808080808080 (mask out A-file)
-NOT_H_FILE = int(0xfefefefefefefefe)  # ~0x0101010101010101 (mask out H-file)
+NOT_A_FILE = NOT_A_FILE_DEFAULT
+NOT_H_FILE = NOT_H_FILE_DEFAULT
 
 @dataclass(frozen=True)
 class BitBoard:
-    """Othello board encoded as two 64-bit integers for black and white."""
+    """Othello board encoded as two integers for black and white."""
 
     black: int
     white: int
+    size: int = DEFAULT_BOARD_SIZE
 
     @staticmethod
-    def initial() -> "BitBoard":
+    def initial(size: int = DEFAULT_BOARD_SIZE) -> "BitBoard":
         """Return a board in the standard initial Othello setup."""
-        black = 0x0000000810000000
-        white = 0x0000001008000000
-        return BitBoard(black, white)
+        mid = size // 2
+        total = size * size
+        def pos(r: int, c: int) -> int:
+            return 1 << (total - 1 - (r * size + c))
+
+        black = pos(mid - 1, mid) | pos(mid, mid - 1)
+        white = pos(mid - 1, mid - 1) | pos(mid, mid)
+        return BitBoard(black, white, size)
 
     @staticmethod
     def from_ascii(board_str: str) -> "BitBoard":
-        """Create a board from an ASCII diagram.
+        """Create a board from an ASCII diagram."""
 
-        The diagram should consist of 8 lines of 8 characters using
-        ``B`` for black, ``W`` for white and ``.`` for empty squares.
-        """
         lines = [line.strip() for line in board_str.strip().splitlines()]
-        if len(lines) != BOARD_SIZE:
-            raise ValueError("Board diagram must have 8 lines")
+        size = len(lines)
+        if any(len(line) != size for line in lines):
+            raise ValueError("Board diagram must be square")
+        total = size * size
+
+        def pos(r: int, c: int) -> int:
+            return 1 << (total - 1 - (r * size + c))
+
         black = white = 0
         for r, line in enumerate(lines):
-            if len(line) != BOARD_SIZE:
-                raise ValueError("Each line in board diagram must have 8 characters")
             for c, ch in enumerate(line):
-                bit = 1 << (TOTAL_SQUARES - 1 - (r * BOARD_SIZE + c))
+                bit = pos(r, c)
                 if ch == "B":
                     black |= bit
                 elif ch == "W":
                     white |= bit
                 elif ch != ".":
                     raise ValueError(f"Invalid character '{ch}' in board diagram")
-        return BitBoard(black, white)
+        return BitBoard(black, white, size)
 
     def occupied(self) -> int:
         """Return a bitboard with all occupied squares."""
@@ -70,26 +79,50 @@ class BitBoard:
 
     def empty(self) -> int:
         """Return a bitboard with all empty squares."""
-        return ~self.occupied() & ((1 << TOTAL_SQUARES) - 1)
+        mask = (1 << (self.size * self.size)) - 1
+        return ~self.occupied() & mask
 
     @staticmethod
-    def _shift(bitboard: int, direction: str) -> int:
-        # Check for edge conditions BEFORE shifting to prevent wrapping
-        if direction in ('E', 'NE', 'SE'):
-            # Don't shift if any bits are in H-file
-            if bitboard & ~NOT_H_FILE:
+    def _file_mask(size: int, col: int) -> int:
+        mask = 0
+        total = size * size
+        for r in range(size):
+            mask |= 1 << (total - 1 - (r * size + col))
+        return mask
+
+    def _a_file_mask(self) -> int:
+        return self._file_mask(self.size, 0)
+
+    def _h_file_mask(self) -> int:
+        return self._file_mask(self.size, self.size - 1)
+
+    @staticmethod
+    def _shift(bitboard: int, direction: str, size: int = DEFAULT_BOARD_SIZE) -> int:
+        total = size * size
+        mask = (1 << total) - 1
+
+        if direction in ("E", "NE", "SE"):
+            if bitboard & BitBoard._file_mask(size, size - 1):
                 return 0
-        if direction in ('W', 'NW', 'SW'):
-            # Don't shift if any bits are in A-file
-            if bitboard & ~NOT_A_FILE:
+        if direction in ("W", "NW", "SW"):
+            if bitboard & BitBoard._file_mask(size, 0):
                 return 0
-        
-        shift = DIRS[direction]
-        # REVIEW: verify that shifting logic still works for other board sizes
+
+        shifts = {
+            "N": size,
+            "S": -size,
+            "E": -1,
+            "W": 1,
+            "NE": size - 1,
+            "NW": size + 1,
+            "SE": -(size + 1),
+            "SW": -(size - 1),
+        }
+        shift = shifts[direction]
         if shift > 0:
-            bb = bitboard << shift
+            bb = (bitboard << shift) & mask
         else:
-            bb = bitboard >> -shift
+            bb = (bitboard >> -shift) & mask
         return bb
 
     def legal_moves(self, player: int, opponent: int) -> int:
@@ -99,12 +132,12 @@ class BitBoard:
         candidates = empty
         while candidates:
             move = candidates & -candidates
-            for d in DIRS:
-                bb = self._shift(move, d)
+            for d in DIR_KEYS:
+                bb = BitBoard._shift(move, d, self.size)
                 if bb & opponent:
-                    bb = self._shift(bb, d)
+                    bb = BitBoard._shift(bb, d, self.size)
                     while bb & opponent:
-                        bb = self._shift(bb, d)
+                        bb = BitBoard._shift(bb, d, self.size)
                     if bb & player:
                         moves |= move
                         break
@@ -114,12 +147,12 @@ class BitBoard:
     def flips(self, move: int, player: int, opponent: int) -> int:
         """Return the stones that would be flipped by ``move``."""
         flips = 0
-        for d in DIRS:
+        for d in DIR_KEYS:
             mask = 0
-            bb = self._shift(move, d)
+            bb = BitBoard._shift(move, d, self.size)
             while bb & opponent:
                 mask |= bb
-                bb = self._shift(bb, d)
+                bb = BitBoard._shift(bb, d, self.size)
             if bb & player:
                 flips |= mask
         return flips
@@ -134,30 +167,31 @@ class BitBoard:
         player |= move | flips
         opponent &= ~flips
         if black_to_move:
-            return BitBoard(player, opponent)
+            return BitBoard(player, opponent, self.size)
         else:
-            return BitBoard(opponent, player)
+            return BitBoard(opponent, player, self.size)
 
     def __str__(self) -> str:
         """Return an ASCII representation of the board."""
         s = ""
-        for i in range(TOTAL_SQUARES):
-            bit = 1 << (TOTAL_SQUARES - 1 - i)
+        total = self.size * self.size
+        for i in range(total):
+            bit = 1 << (total - 1 - i)
             if self.black & bit:
                 s += "B"
             elif self.white & bit:
                 s += "W"
             else:
                 s += "."
-            if (i + 1) % BOARD_SIZE == 0:
+            if (i + 1) % self.size == 0:
                 s += "\n"
         return s
 
 
-def parse_move(move_str: str) -> int:
+def parse_move(move_str: str, size: int = DEFAULT_BOARD_SIZE) -> int:
     """Return bit mask corresponding to ``move_str`` such as 'd3'."""
     col = ord(move_str[0].lower()) - ord('a')
-    row = int(move_str[1]) - 1
-    # NOTE: assumes standard 8x8 board indexing
-    pos = row * BOARD_SIZE + col
-    return 1 << (TOTAL_SQUARES - 1 - pos)
+    row = int(move_str[1:]) - 1
+    pos = row * size + col
+    total = size * size
+    return 1 << (total - 1 - pos)

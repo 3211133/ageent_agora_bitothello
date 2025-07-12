@@ -9,9 +9,9 @@
 pip install -e .
 
 # 対戦を開始
-othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard,expert}] [--time-limit SECS] [--host HOST:PORT | --connect HOST:PORT]
+othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard,expert}] [--time-limit SECS] [--size N] [--host HOST:PORT | --connect HOST:PORT]
 # GUI 版を起動
-othello-gui [--vs-ai] [--ai-level {easy,hard,expert}]
+othello-gui [--vs-ai] [--ai-level {easy,hard,expert}] [--size N]
 ```
 
 GUI では合法手のハイライトと、無効な操作時にメッセージを表示するステータスラベルを追加しています。
@@ -22,6 +22,7 @@ GUI では合法手のハイライトと、無効な操作時にメッセージ�
 最大反転数の手を選び、`expert` では局面の位置評価に基づき手を選ぶため、
 `easy` よりも強力です。
 `--time-limit` で各プレイヤーの持ち時間（秒）を設定できます。0 を指定すると即時タイムアウトになります。
+`--size` を指定すると盤面の大きさを変更できます（偶数のみ）。デフォルトは 8 です。
 `--host` で待ち受け、`--connect` で接続してネットワーク対戦が可能です。ホスト側が黒番になります。
 
 ## ネットワーク機能
