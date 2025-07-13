@@ -136,7 +136,33 @@ source venv/bin/activate && pytest --cov=src --cov-report=xml --cov-report=term-
 
 ## Issue Resolution Workflow
 
-### 📋 Standard Process for GitHub Issues
+### 🚀 Automated Workflow (Recommended)
+
+#### Quick Start Commands
+```bash
+# Start working on an issue (complete automation)
+./scripts/start_issue.sh <issue_number> "Issue Title" <PRIORITY> [analysis_type]
+
+# Complete an issue (complete automation)  
+./scripts/complete_issue.sh <issue_number> ["Optional commit summary"] [skip_tests]
+```
+
+#### Examples
+```bash
+# Start security issue
+./scripts/start_issue.sh 69 "Test Coverage Issues" "MEDIUM" "security"
+
+# Start AI-related issue
+./scripts/start_issue.sh 70 "AI Improvements" "LOW" "ai"
+
+# Complete issue with custom message
+./scripts/complete_issue.sh 69 "Enhanced test coverage for critical paths"
+
+# Complete documentation-only issue (skip tests)
+./scripts/complete_issue.sh 70 "Updated documentation" true
+```
+
+### 🔧 Manual Workflow (Alternative)
 
 #### 1. Issue Investigation and Analysis
 ```bash
@@ -214,15 +240,75 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 - **All Issues**: Must create individual PRs (one issue per PR)
 - **MANDATORY**: Address review feedback before proceeding to next issue
 
-### 🔧 Available Notification Scripts
+### 🔧 Available Scripts
+
+#### Automation Scripts (Recommended)
+- `./scripts/start_issue.sh` - Complete issue start automation
+- `./scripts/complete_issue.sh` - Complete issue completion automation
+
+#### Individual Notification Scripts
 - `scripts/slack_notify.sh "message"` - Basic notification
-- `scripts/notify_issue_start.sh` - Issue start notification
+- `scripts/notify_issue_start.sh` - Issue start notification  
 - `scripts/notify_issue_complete.sh` - Issue completion notification
+
+#### Script Features
+**start_issue.sh automates:**
+1. Environment setup and validation
+2. Virtual environment activation
+3. Dependency installation check
+4. Git branch creation and checkout
+5. Baseline testing
+6. Issue-specific analysis
+7. Slack notifications
+8. Summary and next steps
+
+**complete_issue.sh automates:**
+1. Environment validation
+2. Git status checks
+3. Comprehensive testing
+4. Issue detail retrieval
+5. Git operations (commit, push)
+6. PR creation with detailed descriptions
+7. Slack notifications
+8. Cleanup options and next steps
 
 ### 📊 Current Issue Priority Queue
 1. **🔴 Critical/High Security Issues** (64, 65, 66)
 2. **🟡 Medium Performance/Logic Issues** (67, 68, 69)  
 3. **🔧 Low Development/Build Issues** (70)
+
+## Quick Reference
+
+### Essential Commands
+```bash
+# Start an issue (complete automation)
+./scripts/start_issue.sh <issue_number> "Issue Title" <PRIORITY>
+
+# Complete an issue (complete automation)
+./scripts/complete_issue.sh <issue_number>
+
+# Run tests
+source venv/bin/activate && pytest --cov=src --cov-report=term-missing
+
+# Check PR reviews
+gh pr list --state open
+
+# Git status
+git status
+```
+
+### Priority Levels
+- **CRITICAL**: Security vulnerabilities, crashes
+- **HIGH**: Major functionality issues
+- **MEDIUM**: Feature improvements, compatibility  
+- **LOW**: Development experience, documentation
+
+### Analysis Types (for start_issue.sh)
+- `security` - Security-focused analysis
+- `memory` - Memory and performance analysis
+- `ai` - AI module analysis
+- `compatibility` - Compatibility analysis
+- (default) - General analysis
 
 ## Development Notes
 - Game uses `a1`-`h8` coordinate notation
