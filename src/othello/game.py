@@ -22,6 +22,37 @@ class Game:
     def __post_init__(self) -> None:
         if not self.history:
             self.history.append((self.board, self.black_to_move))
+    
+    def cleanup_history(self) -> None:
+        """Manually clean up old history entries beyond limits.
+        
+        Useful for memory management in long-running games.
+        """
+        if len(self.history) > self.max_history_size:
+            entries_to_remove = len(self.history) - self.max_history_size
+            # Keep at least one entry for undo functionality
+            entries_to_remove = min(entries_to_remove, len(self.history) - 1)
+            if entries_to_remove > 0:
+                self.history = self.history[entries_to_remove:]
+        
+        if len(self.future) > self.max_future_size:
+            entries_to_remove = len(self.future) - self.max_future_size
+            if entries_to_remove > 0:
+                self.future = self.future[entries_to_remove:]
+    
+    def get_memory_usage(self) -> dict[str, int]:
+        """Get current memory usage statistics for the game.
+        
+        Returns:
+            Dictionary with memory usage statistics
+        """
+        return {
+            'history_size': len(self.history),
+            'future_size': len(self.future),
+            'max_history_size': self.max_history_size,
+            'max_future_size': self.max_future_size,
+            'total_states': len(self.history) + len(self.future),
+        }
 
     def legal_moves(self) -> int:
         player = self.board.black if self.black_to_move else self.board.white
