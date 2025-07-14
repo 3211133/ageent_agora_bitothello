@@ -96,7 +96,7 @@ git checkout main
 git pull origin main
 
 # Create branch name from issue
-BRANCH_NAME="fix/issue-${ISSUE_NUMBER}-$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-')"
+BRANCH_NAME="fix/issue-${ISSUE_NUMBER}-$(echo "$ISSUE_TITLE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-_')"
 
 print_step "Creating branch: ${BRANCH_NAME}"
 

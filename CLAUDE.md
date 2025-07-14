@@ -255,7 +255,6 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 - `./scripts/setup-gemini.sh` - Gemini API configuration helper
 
 #### 📢 Individual Notification Scripts
-- `scripts/slack_notify.sh "message"` - Basic notification
 - `scripts/notify_issue_start.sh` - Issue start notification  
 - `scripts/notify_issue_complete.sh` - Issue completion notification
 
