@@ -207,14 +207,17 @@ def load_state(path: str | Path = "othello.sav") -> tuple[BitBoard, bool]:
             white_pieces = int(lines[1])
             black_to_move = bool(int(lines[2]))
             board_size = int(lines[3])
-            
-            # Validate board size
-            if board_size < 4 or board_size > 26 or board_size % 2 != 0:
-                raise ValueError(f"Invalid board size: {board_size} (must be even, 4-26)")
-            
+        except (ValueError, TypeError) as e:
+            raise ValueError(f"Corrupted save file (new format): invalid data format: {e}")
+        
+        # Validate board size separately to provide specific error messages
+        if board_size < 4 or board_size > 26 or board_size % 2 != 0:
+            raise ValueError(f"Invalid board size: {board_size} (must be even, 4-26)")
+        
+        try:
             board = BitBoard(black_pieces, white_pieces, board_size)
             return board, black_to_move
         except (ValueError, TypeError) as e:
-            raise ValueError(f"Corrupted save file (new format): {e}")
+            raise ValueError(f"Corrupted save file (new format): invalid board state: {e}")
     else:
         raise ValueError(f"Invalid save file format: expected 3 or 4 lines, got {len(lines)}")
