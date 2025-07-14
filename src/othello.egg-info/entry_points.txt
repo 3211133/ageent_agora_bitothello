@@ -1,0 +1,3 @@
+[console_scripts]
+othello = othello.cli:play
+othello-gui = othello.gui:main
