@@ -242,16 +242,25 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 
 ### 🔧 Available Scripts
 
-#### Automation Scripts (Recommended)
-- `./scripts/start_issue.sh` - Complete issue start automation
-- `./scripts/complete_issue.sh` - Complete issue completion automation
+#### 🚀 Complete Workflow Automation
+- `./scripts/start_issue.sh` - Issue start automation (environment, branch, analysis, notifications)
+- `./scripts/complete_issue.sh` - Issue completion automation (testing, commit, PR, notifications)
 
-#### Individual Notification Scripts
+#### 🛠️ Development Process Automation  
+- `./scripts/investigate.sh` - Code investigation and analysis automation
+- `./scripts/dev-helper.sh` - Development workflow helpers (testing, quality, watch mode)
+- `./scripts/check-reviews.sh` - PR review management and response automation
+- `./scripts/quality-check.sh` - Comprehensive quality and security checks
+
+#### 📢 Individual Notification Scripts
 - `scripts/slack_notify.sh "message"` - Basic notification
 - `scripts/notify_issue_start.sh` - Issue start notification  
 - `scripts/notify_issue_complete.sh` - Issue completion notification
 
 #### Script Features
+
+**🚀 Core Workflow Scripts:**
+
 **start_issue.sh automates:**
 1. Environment setup and validation
 2. Virtual environment activation
@@ -272,6 +281,36 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 7. Slack notifications
 8. Cleanup options and next steps
 
+**🔍 Development Process Scripts:**
+
+**investigate.sh provides:**
+- Smart code search (function, class, variable, security patterns)
+- Git history analysis for related changes
+- Dependency mapping and impact assessment
+- File modification tracking
+- Code metrics and complexity analysis
+
+**dev-helper.sh provides:**
+- Quick testing with multiple scopes (changed files, fast, unit, integration, security)
+- Watch mode for continuous testing during development
+- Code quality checks and syntax validation
+- Smart commit helper with pre-commit validation
+- Development progress monitoring
+
+**check-reviews.sh provides:**
+- Open PR listing with review status
+- Detailed review analysis and comment parsing
+- Response template generation (addressed, disagree, partial)
+- Interactive response helpers
+- CI status monitoring for all PRs
+
+**quality-check.sh provides:**
+- Security vulnerability scanning (secrets, injections, path traversal)
+- Performance analysis and benchmarking
+- Code quality metrics (complexity, file sizes, TODOs)
+- Test coverage analysis and reporting
+- Dependency security auditing
+
 ### 📊 Current Issue Priority Queue
 1. **🔴 Critical/High Security Issues** (64, 65, 66)
 2. **🟡 Medium Performance/Logic Issues** (67, 68, 69)  
@@ -281,20 +320,47 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 
 ### Essential Commands
 ```bash
-# Start an issue (complete automation)
-./scripts/start_issue.sh <issue_number> "Issue Title" <PRIORITY>
+# 🚀 Core Workflow
+./scripts/start_issue.sh <issue_number> "Issue Title" <PRIORITY> [analysis_type]
+./scripts/complete_issue.sh <issue_number> ["commit_summary"] [skip_tests]
 
-# Complete an issue (complete automation)
-./scripts/complete_issue.sh <issue_number>
+# 🔍 Development Process
+./scripts/investigate.sh <search_type> <search_term> [scope]
+./scripts/dev-helper.sh <action> [options]
+./scripts/check-reviews.sh [action] [pr_number]
+./scripts/quality-check.sh [check_type]
 
-# Run tests
+# 📊 Manual Commands (if needed)
 source venv/bin/activate && pytest --cov=src --cov-report=term-missing
-
-# Check PR reviews
 gh pr list --state open
-
-# Git status
 git status
+```
+
+### Common Development Patterns
+```bash
+# 🎯 Starting work on a security issue
+./scripts/start_issue.sh 69 "Fix Security Vulnerability" "HIGH" "security"
+
+# 🔄 Development cycle
+./scripts/dev-helper.sh watch fast        # Continuous testing
+./scripts/dev-helper.sh test changed      # Test only changed files
+./scripts/dev-helper.sh quality           # Check code quality
+
+# 📋 Investigation and analysis
+./scripts/investigate.sh function "choose_move" src
+./scripts/investigate.sh security "password|token" all
+
+# 👁️ PR review management
+./scripts/check-reviews.sh list           # List all PRs
+./scripts/check-reviews.sh check 75       # Check specific PR
+./scripts/check-reviews.sh respond 75     # Interactive response
+
+# 🛡️ Quality assurance
+./scripts/quality-check.sh security       # Security scan
+./scripts/quality-check.sh all            # Full quality check
+
+# 🏁 Completing work
+./scripts/complete_issue.sh 69 "Fixed critical security vulnerability"
 ```
 
 ### Priority Levels
