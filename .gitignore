@@ -2,7 +2,21 @@
 __pycache__/
 *.pyc
 
+# Virtual environment
+venv/
+.venv/
+
 # Test artifacts
 .pytest_cache/
+.coverage
 coverage/
+htmlcov/
 src/othello/scoreboard.json
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Save files
+saves/
