@@ -98,14 +98,21 @@ class TestCLIFunctions:
     @patch('othello.cli.print')
     @patch('othello.cli.time.time')
     def test_run_game_ai_vs_ai(self, mock_time, mock_print, mock_input):
-        """Test run_game with AI vs AI mode."""
+        """Test run_game with AI vs AI mode and verify AI moves."""
         # Mock time to prevent actual delays
         mock_time.return_value = 0
+        
+        # Get initial board state
+        initial_board = BitBoard.initial(4)
+        initial_empty_squares = bin(~(initial_board.black | initial_board.white)).count('1')
         
         # Run a short AI vs AI game
         result = run_game(ai_vs_ai=True, ai_level="easy", size=4)
         
         assert isinstance(result, BitBoard)
+        # Verify AI moves were made (board changed from initial state)
+        result_empty_squares = bin(~(result.black | result.white)).count('1')
+        assert result_empty_squares < initial_empty_squares, "AI should have made moves"
         mock_print.assert_called()
     
     @patch('othello.cli.input')
@@ -168,16 +175,20 @@ class TestCLIFunctions:
     @patch('othello.cli.network.recv_line')
     @patch('othello.cli.print')
     def test_run_network_game_connect(self, mock_print, mock_recv, mock_join):
-        """Test run_network_game as client."""
+        """Test run_network_game as client with message handling."""
         # Mock network components
         mock_socket = MagicMock()
         mock_join.return_value = mock_socket
-        mock_recv.return_value = "QUIT"
+        
+        # Test actual game message handling before QUIT
+        mock_recv.side_effect = ["MOVE:a3", "QUIT"]
         
         result = run_network_game(connect="localhost:8080", size=4)
         
         assert isinstance(result, BitBoard)
         mock_join.assert_called_once_with("localhost", 8080, timeout=30.0)
+        # Verify that message handling occurred
+        assert mock_recv.call_count >= 2
     
     def test_run_network_game_invalid_host_format(self):
         """Test run_network_game with invalid host format."""
