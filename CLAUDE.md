@@ -136,7 +136,33 @@ source venv/bin/activate && pytest --cov=src --cov-report=xml --cov-report=term-
 
 ## Issue Resolution Workflow
 
-### 📋 Standard Process for GitHub Issues
+### 🚀 Automated Workflow (Recommended)
+
+#### Quick Start Commands
+```bash
+# Start working on an issue (complete automation)
+./scripts/start_issue.sh <issue_number> "Issue Title" <PRIORITY> [analysis_type]
+
+# Complete an issue (complete automation)  
+./scripts/complete_issue.sh <issue_number> ["Optional commit summary"] [skip_tests]
+```
+
+#### Examples
+```bash
+# Start security issue
+./scripts/start_issue.sh 69 "Test Coverage Issues" "MEDIUM" "security"
+
+# Start AI-related issue
+./scripts/start_issue.sh 70 "AI Improvements" "LOW" "ai"
+
+# Complete issue with custom message
+./scripts/complete_issue.sh 69 "Enhanced test coverage for critical paths"
+
+# Complete documentation-only issue (skip tests)
+./scripts/complete_issue.sh 70 "Updated documentation" true
+```
+
+### 🔧 Manual Workflow (Alternative)
 
 #### 1. Issue Investigation and Analysis
 ```bash
@@ -214,15 +240,200 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 - **All Issues**: Must create individual PRs (one issue per PR)
 - **MANDATORY**: Address review feedback before proceeding to next issue
 
-### 🔧 Available Notification Scripts
+### 🔧 Available Scripts
+
+#### 🚀 Complete Workflow Automation
+- `./scripts/start_issue.sh` - Issue start automation (environment, branch, analysis, notifications)
+- `./scripts/complete_issue.sh` - Issue completion automation (testing, commit, PR, notifications)
+
+#### 🛠️ Development Process Automation  
+- `./scripts/investigate.sh` - Code investigation and analysis automation
+- `./scripts/dev-helper.sh` - Development workflow helpers (testing, quality, watch mode)
+- `./scripts/check-reviews.sh` - PR review management and response automation
+- `./scripts/quality-check.sh` - Comprehensive quality and security checks
+- `./scripts/gemini-review.sh` - AI-powered code review using Google Gemini
+- `./scripts/setup-gemini.sh` - Gemini API configuration helper
+
+#### 📢 Individual Notification Scripts
 - `scripts/slack_notify.sh "message"` - Basic notification
-- `scripts/notify_issue_start.sh` - Issue start notification
+- `scripts/notify_issue_start.sh` - Issue start notification  
 - `scripts/notify_issue_complete.sh` - Issue completion notification
+
+#### Script Features
+
+**🚀 Core Workflow Scripts:**
+
+**start_issue.sh automates:**
+1. Environment setup and validation
+2. Virtual environment activation
+3. Dependency installation check
+4. Git branch creation and checkout
+5. Baseline testing
+6. Issue-specific analysis
+7. Slack notifications
+8. Summary and next steps
+
+**complete_issue.sh automates:**
+1. Environment validation
+2. Git status checks
+3. Comprehensive testing
+4. Issue detail retrieval
+5. **Optional Gemini AI pre-PR review** (comprehensive, security, or performance focus)
+6. Git operations (commit, push)
+7. PR creation with detailed descriptions
+8. Slack notifications
+9. Cleanup options and next steps
+
+**🔍 Development Process Scripts:**
+
+**investigate.sh provides:**
+- Smart code search (function, class, variable, security patterns)
+- Git history analysis for related changes
+- Dependency mapping and impact assessment
+- File modification tracking
+- Code metrics and complexity analysis
+
+**dev-helper.sh provides:**
+- Quick testing with multiple scopes (changed files, fast, unit, integration, security)
+- Watch mode for continuous testing during development
+- Code quality checks and syntax validation
+- Smart commit helper with pre-commit validation
+- Development progress monitoring
+
+**check-reviews.sh provides:**
+- Open PR listing with review status
+- Detailed review analysis and comment parsing
+- Response template generation (addressed, disagree, partial)
+- Interactive response helpers
+- CI status monitoring for all PRs
+
+**quality-check.sh provides:**
+- Security vulnerability scanning (secrets, injections, path traversal)
+- Performance analysis and benchmarking
+- Code quality metrics (complexity, file sizes, TODOs)
+- Test coverage analysis and reporting
+- Dependency security auditing
+
+**gemini-review.sh provides:**
+- AI-powered comprehensive code review using Google Gemini
+- Specialized focus areas (security, performance, maintainability, general)
+- Interactive review workflow with actionable feedback
+- Review result archiving and documentation
+- Integration with complete_issue.sh workflow
 
 ### 📊 Current Issue Priority Queue
 1. **🔴 Critical/High Security Issues** (64, 65, 66)
 2. **🟡 Medium Performance/Logic Issues** (67, 68, 69)  
 3. **🔧 Low Development/Build Issues** (70)
+
+## Quick Reference
+
+### Essential Commands
+```bash
+# 🚀 Core Workflow
+./scripts/start_issue.sh <issue_number> "Issue Title" <PRIORITY> [analysis_type]
+./scripts/complete_issue.sh <issue_number> ["commit_summary"] [skip_tests]
+
+# 🔍 Development Process
+./scripts/investigate.sh <search_type> <search_term> [scope]
+./scripts/dev-helper.sh <action> [options]
+./scripts/check-reviews.sh [action] [pr_number]
+./scripts/quality-check.sh [check_type]
+./scripts/gemini-review.sh [scope] [focus_area]
+
+# 📊 Manual Commands (if needed)
+source venv/bin/activate && pytest --cov=src --cov-report=term-missing
+gh pr list --state open
+git status
+```
+
+### Common Development Patterns
+```bash
+# 🎯 Starting work on a security issue
+./scripts/start_issue.sh 69 "Fix Security Vulnerability" "HIGH" "security"
+
+# 🔄 Development cycle
+./scripts/dev-helper.sh watch fast        # Continuous testing
+./scripts/dev-helper.sh test changed      # Test only changed files
+./scripts/dev-helper.sh quality           # Check code quality
+
+# 📋 Investigation and analysis
+./scripts/investigate.sh function "choose_move" src
+./scripts/investigate.sh security "password|token" all
+
+# 👁️ PR review management
+./scripts/check-reviews.sh list           # List all PRs
+./scripts/check-reviews.sh check 75       # Check specific PR
+./scripts/check-reviews.sh respond 75     # Interactive response
+
+# 🛡️ Quality assurance
+./scripts/quality-check.sh security       # Security scan
+./scripts/quality-check.sh all            # Full quality check
+
+# 🤖 AI-powered code review
+./scripts/setup-gemini.sh                 # One-time setup
+./scripts/gemini-review.sh staged security # Security-focused AI review
+./scripts/gemini-review.sh all general    # Comprehensive AI review
+
+# 🏁 Completing work (includes optional Gemini review)
+./scripts/complete_issue.sh 69 "Fixed critical security vulnerability"
+```
+
+### Priority Levels
+- **CRITICAL**: Security vulnerabilities, crashes
+- **HIGH**: Major functionality issues
+- **MEDIUM**: Feature improvements, compatibility  
+- **LOW**: Development experience, documentation
+
+### Analysis Types (for start_issue.sh)
+- `security` - Security-focused analysis
+- `memory` - Memory and performance analysis
+- `ai` - AI module analysis
+- `compatibility` - Compatibility analysis
+- (default) - General analysis
+
+### Gemini AI Code Review Setup
+
+#### One-time Setup
+```bash
+# Run the setup helper
+./scripts/setup-gemini.sh
+
+# Manually set API key (alternative)
+export GEMINI_API_KEY="your-api-key-here"
+# OR create ~/.gemini_api_key file
+# OR add to .env file: GEMINI_API_KEY=your-key
+```
+
+#### Get API Key
+1. Visit: https://makersuite.google.com/app/apikey
+2. Sign in with Google account
+3. Create API key
+4. Run setup script: `./scripts/setup-gemini.sh`
+
+#### Review Focus Areas
+- **general**: Comprehensive review (correctness, security, performance, maintainability)
+- **security**: Security-focused (vulnerabilities, input validation, auth, crypto)
+- **performance**: Performance-focused (complexity, memory, optimization opportunities)
+- **maintainability**: Code quality (readability, documentation, testing, refactoring)
+
+#### Usage Examples
+```bash
+# Standalone reviews
+./scripts/gemini-review.sh staged general          # Review staged changes
+./scripts/gemini-review.sh all security           # Security review of all changes
+./scripts/gemini-review.sh commit performance     # Performance review of last commit
+
+# Integrated workflow (optional step during completion)
+./scripts/complete_issue.sh 69                    # Offers Gemini review choice
+```
+
+#### Review Output
+- Detailed feedback with actionable recommendations
+- Risk assessments and severity ratings
+- Specific fix suggestions with examples
+- Archived reviews in `reviews/` directory
+- Interactive follow-up options
 
 ## Development Notes
 - Game uses `a1`-`h8` coordinate notation
