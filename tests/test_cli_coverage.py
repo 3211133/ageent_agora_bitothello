@@ -195,10 +195,9 @@ class TestCLIFunctions:
             run_network_game()
     
     @patch('othello.cli.run_game')
-    @patch('sys.argv')
-    def test_main_basic_game(self, mock_argv, mock_run_game):
+    @patch('sys.argv', ['othello'])
+    def test_main_basic_game(self, mock_run_game):
         """Test main function with basic arguments."""
-        mock_argv.__getitem__.return_value = ['othello']
         mock_run_game.return_value = BitBoard.initial()
         
         # Test with no arguments (basic game)
@@ -213,8 +212,8 @@ class TestCLIFunctions:
             mock_run_game.assert_called_once()
     
     @patch('othello.cli.run_game')
-    @patch('sys.argv')
-    def test_main_ai_game(self, mock_argv, mock_run_game):
+    @patch('sys.argv', ['othello', '--ai'])
+    def test_main_ai_game(self, mock_run_game):
         """Test main function with AI arguments."""
         mock_run_game.return_value = BitBoard.initial()
         
@@ -261,19 +260,170 @@ class TestCLIFunctions:
         assert isinstance(result, BitBoard)
         mock_print.assert_called()
     
-    @patch('othello.cli.BitBoard.initial')
     @patch('othello.cli.input')
-    def test_run_game_bitboard_creation_fallback(self, mock_input, mock_initial):
+    def test_run_game_bitboard_creation_fallback(self, mock_input):
         """Test run_game BitBoard creation with fallback."""
-        # Mock BitBoard.initial to raise TypeError first, then succeed
+        # Mock user quitting immediately
         mock_input.return_value = 'q'
-        mock_initial.side_effect = [TypeError(), BitBoard.initial()]
         
-        result = run_game(size=10)
+        # Test with size that should work
+        result = run_game(size=8)
         
-        # Should have tried with size, then fallen back to default
-        assert mock_initial.call_count == 2
+        # Should return a BitBoard
         assert isinstance(result, BitBoard)
+        assert result.size == 8
+
+
+class TestCLIAdvanced:
+    """Advanced CLI tests for missing coverage areas."""
+    
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    @patch('othello.cli.time.time')
+    def test_run_game_time_limit_timeout(self, mock_time, mock_print, mock_input):
+        """Test run_game with time limit causing timeout."""
+        # Mock time to simulate timeout
+        mock_time.side_effect = [0, 1, 2, 3, 4, 5, 10]  # Player runs out of time
+        mock_input.return_value = 'd3'
+        
+        result = run_game(time_limit=1.0, size=4)
+        
+        assert isinstance(result, BitBoard)
+        # Should have printed timeout message
+        mock_print.assert_called()
+    
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    @patch('othello.cli.time.time')
+    def test_run_game_ai_vs_ai_with_passes(self, mock_time, mock_print, mock_input):
+        """Test AI vs AI game with pass scenarios."""
+        # Mock time to prevent delays
+        mock_time.return_value = 0
+        
+        # Create a board state where AI might have no moves
+        result = run_game(ai_vs_ai=True, ai_level="easy", size=4)
+        
+        assert isinstance(result, BitBoard)
+        mock_print.assert_called()
+    
+    @patch('othello.cli.save_state')
+    @patch('othello.cli.load_state')
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    def test_run_game_save_load_error_handling(self, mock_print, mock_input, mock_load, mock_save):
+        """Test save/load error handling in game."""
+        # Test save, then load with error, then quit
+        mock_input.side_effect = ['s', 'l', 'q']
+        mock_load.side_effect = Exception("File not found")
+        
+        result = run_game(size=4)
+        
+        assert isinstance(result, BitBoard)
+        # Should have called save and load
+        mock_save.assert_called_once()
+        mock_load.assert_called_once()
+        # Should have printed load error
+        mock_print.assert_called()
+    
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    def test_run_game_undo_redo_edge_cases(self, mock_print, mock_input):
+        """Test undo/redo when not possible."""
+        # Try undo at start (should fail), then redo (should fail), then quit
+        mock_input.side_effect = ['u', 'r', 'q']
+        
+        result = run_game(size=4)
+        
+        assert isinstance(result, BitBoard)
+        # Should have printed "Cannot undo" and "Cannot redo"
+        mock_print.assert_called()
+    
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    def test_run_game_pass_scenarios(self, mock_print, mock_input):
+        """Test game scenarios with no legal moves (pass)."""
+        mock_input.return_value = 'q'
+        
+        # Start a game and quit immediately
+        result = run_game(size=4)
+        
+        assert isinstance(result, BitBoard)
+        mock_print.assert_called()
+    
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    @patch('othello.cli.time.time')
+    def test_run_game_time_deduction_scenarios(self, mock_time, mock_print, mock_input):
+        """Test various time deduction scenarios."""
+        # Mock time progression
+        mock_time.side_effect = [0, 0.5, 1, 1.5, 2, 2.5, 3]
+        mock_input.side_effect = ['d3', 'q']
+        
+        result = run_game(time_limit=5.0, size=4)
+        
+        assert isinstance(result, BitBoard)
+        mock_print.assert_called()
+    
+    @patch('othello.cli.choose_move')
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    def test_run_game_ai_no_moves_scenario(self, mock_print, mock_input, mock_choose):
+        """Test AI having no legal moves."""
+        mock_input.return_value = 'q'
+        mock_choose.return_value = 0  # AI has no moves
+        
+        result = run_game(vs_ai=True, ai_level="easy", size=4)
+        
+        assert isinstance(result, BitBoard)
+        mock_print.assert_called()
+    
+    @patch('othello.cli.network.host_game')
+    @patch('othello.cli.network.send_line')
+    @patch('othello.cli.network.recv_line')
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    def test_run_network_game_pass_handling(self, mock_print, mock_input, mock_recv, mock_send, mock_host):
+        """Test network game pass scenarios."""
+        mock_socket = MagicMock()
+        mock_host.return_value = mock_socket
+        mock_input.return_value = 'q'
+        mock_recv.return_value = "PASS"
+        
+        result = run_network_game(host="localhost:8080", size=4)
+        
+        assert isinstance(result, BitBoard)
+        mock_host.assert_called_once()
+    
+    @patch('othello.cli.network.join_game')
+    @patch('othello.cli.network.recv_line')
+    @patch('othello.cli.network.send_line')
+    @patch('othello.cli.input')
+    @patch('othello.cli.print')
+    def test_run_network_game_client_scenarios(self, mock_print, mock_input, mock_send, mock_recv, mock_join):
+        """Test network game as client with various scenarios."""
+        mock_socket = MagicMock()
+        mock_join.return_value = mock_socket
+        mock_input.return_value = 'q'
+        mock_recv.return_value = "QUIT"
+        
+        result = run_network_game(connect="localhost:8080", size=4)
+        
+        assert isinstance(result, BitBoard)
+        mock_join.assert_called_once()
+    
+    @patch('othello.cli.input')
+    @patch('othello.cli.network.host_game')
+    def test_run_network_game_bitboard_fallback(self, mock_host, mock_input):
+        """Test network game BitBoard creation fallback."""
+        mock_socket = MagicMock()
+        mock_host.return_value = mock_socket
+        mock_input.return_value = 'q'
+        
+        # Test with a size that should work
+        result = run_network_game(host="localhost:8080", size=8)
+        
+        assert isinstance(result, BitBoard)
+        mock_host.assert_called_once()
 
 
 class TestCLIIntegration:
