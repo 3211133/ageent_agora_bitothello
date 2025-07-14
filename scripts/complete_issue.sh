@@ -125,8 +125,62 @@ else
     ISSUE_TITLE="Issue #${ISSUE_NUMBER}"
 fi
 
-# Step 5: Git Operations
-print_step "Step 5: Git Operations"
+# Step 5: Pre-PR Review with Gemini (Optional)
+print_step "Step 5: Pre-PR Review with Gemini"
+
+if [ -f "./scripts/gemini-review.sh" ] && [ "$SKIP_TESTS" != "true" ]; then
+    print_step "Gemini AI code review available. Would you like to run it before PR creation?"
+    echo "  1. Yes - Run comprehensive Gemini review"
+    echo "  2. Yes - Run security-focused Gemini review"
+    echo "  3. Yes - Run performance-focused Gemini review"
+    echo "  4. Skip - Proceed without Gemini review"
+    echo ""
+    read -p "Choose an option (1-4): " gemini_choice
+    
+    case "$gemini_choice" in
+        "1")
+            print_step "Running comprehensive Gemini review..."
+            if ./scripts/gemini-review.sh staged general; then
+                print_success "Gemini review completed successfully"
+            else
+                print_warning "Gemini review failed or was skipped"
+            fi
+            ;;
+        "2")
+            print_step "Running security-focused Gemini review..."
+            if ./scripts/gemini-review.sh staged security; then
+                print_success "Gemini security review completed successfully"
+            else
+                print_warning "Gemini security review failed or was skipped"
+            fi
+            ;;
+        "3")
+            print_step "Running performance-focused Gemini review..."
+            if ./scripts/gemini-review.sh staged performance; then
+                print_success "Gemini performance review completed successfully"
+            else
+                print_warning "Gemini performance review failed or was skipped"
+            fi
+            ;;
+        "4")
+            print_step "Skipping Gemini review as requested"
+            ;;
+        *)
+            print_step "Invalid choice, skipping Gemini review"
+            ;;
+    esac
+else
+    if [ "$SKIP_TESTS" = "true" ]; then
+        print_step "Skipping Gemini review (tests skipped)"
+    else
+        print_warning "Gemini review script not found, skipping AI review"
+    fi
+fi
+
+print_success "Pre-PR review step complete"
+
+# Step 6: Git Operations
+print_step "Step 6: Git Operations"
 
 # Stage all changes
 print_step "Staging all changes..."
@@ -186,8 +240,8 @@ fi
 
 print_success "Git operations complete"
 
-# Step 6: PR Creation
-print_step "Step 6: Pull Request Creation"
+# Step 7: PR Creation
+print_step "Step 7: Pull Request Creation"
 
 if command -v gh >/dev/null 2>&1; then
     # Generate comprehensive PR description
@@ -258,8 +312,8 @@ fi
 
 print_success "PR operations complete"
 
-# Step 7: Slack Notification
-print_step "Step 7: Slack Notification"
+# Step 8: Slack Notification
+print_step "Step 8: Slack Notification"
 
 if [ -f "./scripts/notify_issue_complete.sh" ]; then
     print_step "Sending completion notification..."
@@ -269,8 +323,8 @@ else
     print_warning "Slack notification script not found. Skipping notification."
 fi
 
-# Step 8: Summary and Cleanup Options
-print_step "Step 8: Completion Summary"
+# Step 9: Summary and Cleanup Options
+print_step "Step 9: Completion Summary"
 
 echo ""
 echo "🎉 ================================================"

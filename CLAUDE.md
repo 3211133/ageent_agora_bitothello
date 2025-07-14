@@ -251,6 +251,8 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 - `./scripts/dev-helper.sh` - Development workflow helpers (testing, quality, watch mode)
 - `./scripts/check-reviews.sh` - PR review management and response automation
 - `./scripts/quality-check.sh` - Comprehensive quality and security checks
+- `./scripts/gemini-review.sh` - AI-powered code review using Google Gemini
+- `./scripts/setup-gemini.sh` - Gemini API configuration helper
 
 #### 📢 Individual Notification Scripts
 - `scripts/slack_notify.sh "message"` - Basic notification
@@ -276,10 +278,11 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 2. Git status checks
 3. Comprehensive testing
 4. Issue detail retrieval
-5. Git operations (commit, push)
-6. PR creation with detailed descriptions
-7. Slack notifications
-8. Cleanup options and next steps
+5. **Optional Gemini AI pre-PR review** (comprehensive, security, or performance focus)
+6. Git operations (commit, push)
+7. PR creation with detailed descriptions
+8. Slack notifications
+9. Cleanup options and next steps
 
 **🔍 Development Process Scripts:**
 
@@ -311,6 +314,13 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 - Test coverage analysis and reporting
 - Dependency security auditing
 
+**gemini-review.sh provides:**
+- AI-powered comprehensive code review using Google Gemini
+- Specialized focus areas (security, performance, maintainability, general)
+- Interactive review workflow with actionable feedback
+- Review result archiving and documentation
+- Integration with complete_issue.sh workflow
+
 ### 📊 Current Issue Priority Queue
 1. **🔴 Critical/High Security Issues** (64, 65, 66)
 2. **🟡 Medium Performance/Logic Issues** (67, 68, 69)  
@@ -329,6 +339,7 @@ gh issue create --title "Issue Title" --body "Description from PR feedback"
 ./scripts/dev-helper.sh <action> [options]
 ./scripts/check-reviews.sh [action] [pr_number]
 ./scripts/quality-check.sh [check_type]
+./scripts/gemini-review.sh [scope] [focus_area]
 
 # 📊 Manual Commands (if needed)
 source venv/bin/activate && pytest --cov=src --cov-report=term-missing
@@ -359,7 +370,12 @@ git status
 ./scripts/quality-check.sh security       # Security scan
 ./scripts/quality-check.sh all            # Full quality check
 
-# 🏁 Completing work
+# 🤖 AI-powered code review
+./scripts/setup-gemini.sh                 # One-time setup
+./scripts/gemini-review.sh staged security # Security-focused AI review
+./scripts/gemini-review.sh all general    # Comprehensive AI review
+
+# 🏁 Completing work (includes optional Gemini review)
 ./scripts/complete_issue.sh 69 "Fixed critical security vulnerability"
 ```
 
@@ -375,6 +391,49 @@ git status
 - `ai` - AI module analysis
 - `compatibility` - Compatibility analysis
 - (default) - General analysis
+
+### Gemini AI Code Review Setup
+
+#### One-time Setup
+```bash
+# Run the setup helper
+./scripts/setup-gemini.sh
+
+# Manually set API key (alternative)
+export GEMINI_API_KEY="your-api-key-here"
+# OR create ~/.gemini_api_key file
+# OR add to .env file: GEMINI_API_KEY=your-key
+```
+
+#### Get API Key
+1. Visit: https://makersuite.google.com/app/apikey
+2. Sign in with Google account
+3. Create API key
+4. Run setup script: `./scripts/setup-gemini.sh`
+
+#### Review Focus Areas
+- **general**: Comprehensive review (correctness, security, performance, maintainability)
+- **security**: Security-focused (vulnerabilities, input validation, auth, crypto)
+- **performance**: Performance-focused (complexity, memory, optimization opportunities)
+- **maintainability**: Code quality (readability, documentation, testing, refactoring)
+
+#### Usage Examples
+```bash
+# Standalone reviews
+./scripts/gemini-review.sh staged general          # Review staged changes
+./scripts/gemini-review.sh all security           # Security review of all changes
+./scripts/gemini-review.sh commit performance     # Performance review of last commit
+
+# Integrated workflow (optional step during completion)
+./scripts/complete_issue.sh 69                    # Offers Gemini review choice
+```
+
+#### Review Output
+- Detailed feedback with actionable recommendations
+- Risk assessments and severity ratings
+- Specific fix suggestions with examples
+- Archived reviews in `reviews/` directory
+- Interactive follow-up options
 
 ## Development Notes
 - Game uses `a1`-`h8` coordinate notation
