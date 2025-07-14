@@ -135,6 +135,12 @@ def save_state(board: BitBoard, black_to_move: bool, path: str | Path = "othello
     The file will be saved in the 'saves' directory with path traversal protection.
     Only the filename portion of the path is used for security.
     
+    Save format (version 2 with board size preservation):
+    Line 1: Black pieces bitboard (integer)
+    Line 2: White pieces bitboard (integer) 
+    Line 3: Current player (1 for black, 0 for white)
+    Line 4: Board size (integer)
+    
     Args:
         board: Game board state to save
         black_to_move: Current player turn
@@ -148,7 +154,8 @@ def save_state(board: BitBoard, black_to_move: bool, path: str | Path = "othello
     
     try:
         with open(safe_path, "w") as f:
-            f.write(f"{board.black}\n{board.white}\n{1 if black_to_move else 0}\n")
+            # New format: include board size as 4th line for preservation
+            f.write(f"{board.black}\n{board.white}\n{1 if black_to_move else 0}\n{board.size}\n")
     except OSError as e:
         raise OSError(f"Failed to save game state: {e}")
 
@@ -158,6 +165,10 @@ def load_state(path: str | Path = "othello.sav") -> tuple[BitBoard, bool]:
     
     The file will be loaded from the 'saves' directory with path traversal protection.
     Only the filename portion of the path is used for security.
+    
+    Supports both legacy (3-line) and new (4-line) save formats:
+    - Legacy format: black, white, turn (defaults to 8x8 board)
+    - New format: black, white, turn, size (preserves custom board size)
     
     Args:
         path: Filename to load (directory components ignored for security)
@@ -180,12 +191,30 @@ def load_state(path: str | Path = "othello.sav") -> tuple[BitBoard, bool]:
     except OSError as e:
         raise OSError(f"Failed to load game state: {e}")
     
-    if len(lines) != 3:
-        raise ValueError(f"Invalid save file format: expected 3 lines, got {len(lines)}")
-    
-    try:
-        board = BitBoard(int(lines[0]), int(lines[1]))
-        black_to_move = bool(int(lines[2]))
-        return board, black_to_move
-    except (ValueError, TypeError) as e:
-        raise ValueError(f"Corrupted save file: {e}")
+    # Support both legacy (3-line) and new (4-line) formats
+    if len(lines) == 3:
+        # Legacy format - use default board size for backward compatibility
+        try:
+            board = BitBoard(int(lines[0]), int(lines[1]))  # Uses DEFAULT_BOARD_SIZE
+            black_to_move = bool(int(lines[2]))
+            return board, black_to_move
+        except (ValueError, TypeError) as e:
+            raise ValueError(f"Corrupted save file (legacy format): {e}")
+    elif len(lines) == 4:
+        # New format - preserve board size
+        try:
+            black_pieces = int(lines[0])
+            white_pieces = int(lines[1])
+            black_to_move = bool(int(lines[2]))
+            board_size = int(lines[3])
+            
+            # Validate board size
+            if board_size < 4 or board_size > 26 or board_size % 2 != 0:
+                raise ValueError(f"Invalid board size: {board_size} (must be even, 4-26)")
+            
+            board = BitBoard(black_pieces, white_pieces, board_size)
+            return board, black_to_move
+        except (ValueError, TypeError) as e:
+            raise ValueError(f"Corrupted save file (new format): {e}")
+    else:
+        raise ValueError(f"Invalid save file format: expected 3 or 4 lines, got {len(lines)}")
