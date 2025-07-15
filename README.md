@@ -1,64 +1,64 @@
-# agent_agora_bitothello
+# Agent Agora: Bit Othello
 
-64bitのビットボード表現で実装したシンプルなオセロプログラムです。
-aiに全部やらせる試み。
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI/CD Status](https://img.shields.io/github/actions/workflow/status/ten/ageent_agora_bitothello/.github/workflows/main.yml?branch=main)](https://github.com/ten/ageent_agora_bitothello/actions)
 
-## 使い方
+> ビットボードと探索アルゴリズムを駆使し、強力な棋力を目指すエージェントベースのオセロシミュレーション環境。
 
-```bash
-# インストール
-pip install -e .
+## 概要 (Overview)
 
-# 対戦を開始
-othello [--ai] [--ai-vs-ai] [--ai-level {easy,hard,expert}] [--time-limit SECS] [--size N] [--host HOST:PORT | --connect HOST:PORT]
-# GUI 版を起動
-othello-gui [--vs-ai] [--ai-level {easy,hard,expert}] [--size N]
-```
+Agent Agora: Bit Othelloは、強力なオセロAIを実装・検証するためのPythonプロジェクトです。ビットボードによる高速な盤面操作と、効率的な探索アルゴリズムを組み合わせることで、高い棋力を実現することを目指します。
 
-GUI では合法手のハイライトと、無効な操作時にメッセージを表示するステータスラベルを追加しています。
-ウィンドウ下部には現在のスコアボードが常に表示され、盤面は濃淡2色の緑で描画されます。
+## 主な機能 (Features)
 
-`--ai` を指定すると白番をコンピュータが担当します。
-`--ai-vs-ai` を指定すると黒白とも自動で進行するデモを閲覧できます。
-`--ai-level` で AI の難易度 (`easy`, `hard`, `expert`) を選択できます。`hard` は
-最大反転数の手を選び、`expert` では局面の位置評価に基づき手を選ぶため、
-`easy` よりも強力です。`expert` レベルでは `opening_book.json` に定義された
-オープニングブックを参照し、序盤の最適手を選択します。
-`--time-limit` で各プレイヤーの持ち時間（秒）を設定できます。0 を指定すると即時タイムアウトになります。
-`--size` を指定すると盤面の大きさを変更できます（偶数のみ）。デフォルトは 8 です。
-`--host` で待ち受け、`--connect` で接続してネットワーク対戦が可能です。ホスト側が黒番になります。
+*   **高速な盤面表現**: ビットボードを採用し、高速な合法手生成と盤面更新を実現。
+*   **効率的な探索アルゴリズム**: ミニマックス法とαβ枝刈り法を組み合��せ、深い読みを可能に。
+*   **柔軟な評価関数**: 盤面の安定度、石差、行動可能手数を重み付けして盤面を評価。
+*   **定石データベース**: 序盤の展開を高速化・安定化させるための定石DBを搭載。
+*   **終盤の完全読み**: ゲーム終盤では全幅探索に切り替え、最善手を導き出す。
 
-## ネットワーク機能
+## なぜこのプロジェクトを作ったか (Motivation)
 
-接続メッセージは内部の logger を通して表示されます。接続や待ち受けでは
-タイムアウトと自動リトライが行われるため、多少のネットワーク不調が発生し
-ても再試行されます。
+このプロジェクトは、エージェントベースのアーキテクチャ設計と、古典的なゲームAIにおける探索・評価技術を探求するために開発されました。様々なAIエージェントを競わせ、改善していくためのプラットフォームを提供します。
 
-盤面は"B"が黒、"W"が白、"."が空白を表します。手番のプレイヤーは `a1` から `h8` の形式で座標を入力してください。入力中に `u` で一手戻し、`r` でやり直しができます。`s` で盤面を保存し、`l` で保存された盤面を読み込めます。
-`BitBoard.from_ascii()` を利用すると、この形式の文字列から盤面オブジェクトを作成できるため、テストやデバッグに便利です。手番入力の解析を行う `parse_move` 関数は `othello.board` にあります。
+## インストール (Installation)
 
-## Game クラス
-
-`Game` は `BitBoard` と手番情報をまとめて管理する薄いラッパーです。局面の履歴を保持しており、`apply_move()` で着手すると自動で更新されます。`legal_moves()` で合法手集合を取得し、`undo()` / `redo()` で巻き戻しが可能です。CLI から利用する場合は以下のように生成します。
-
-```python
-from othello.game import Game
-game = Game()  # 初期局面がセットされる
-move = parse_move("d3")
-game.apply_move(move)
-```
-
-## スコアボード
-
-ゲーム終了後の勝敗は `scoreboard.json` に記録され、次回起動時にも累積結果を保持します。
-CLI と GUI の両方で対局終了時に現在のスコアボードが表示されます。
-
-## テスト
+`pyproject.toml` が含まれているため、Poetryを利用した環境構築を推奨します。
 
 ```bash
-pytest --cov=src
+# 依存関係をインストール
+poetry install
+
+# 仮想環境を有効化
+poetry shell
 ```
 
-## 継続的インテグレーション
+## 使い方 (Quick Start)
 
-GitHub Actions を用いて `pytest` を自動実行し、カバレッジも測定します。`main` ブランチへの push または PR 作成時にテストとカバレッジ計算が走ります。
+各種テストを実行することで、システムの動作を確認できます。
+
+```bash
+# すべてのテストを実行
+pytest
+```
+
+## 開発方法 (Development)
+
+開発に協力してくれる方を歓迎します！
+
+1.  リポジトリをフォークし、クローンします。
+2.  Poetryを使って依存関係をインストールします。
+    ```bash
+    poetry install
+    ```
+3.  コードを編集し、変更後は必ずテストを実行してください。
+    ```bash
+    pytest
+    ```
+
+その他、詳細な開発ガイドラインは `CONTRIBUTING.md` および `DESIGN.md` を参照してください。
+プロジェクトのタスク管理や将来の計画については `ROADMAP.md` を確認してください。
+
+## ライセンス (License)
+
+このプロジェクトはMITライセンスです。詳細は `LICENSE` ファイルを参照してください。
