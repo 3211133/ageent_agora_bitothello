@@ -91,7 +91,7 @@ class TestNetworkFunctions:
         result = join_game("localhost", 8080, timeout=1.0)
         
         assert result == mock_socket
-        mock_socket.settimeout.assert_has_calls([call(1.0), call(1.0)])  # Connect timeout, then read timeout
+        mock_socket.settimeout.assert_has_calls([call(1.0), call(30.0)])  # Connect timeout, then read timeout
         mock_socket.connect.assert_called_once_with(("localhost", 8080))
     
     @patch('othello.network.socket.socket')
@@ -268,7 +268,7 @@ class TestNetworkIntegration:
         mock_socket.sendall.assert_called_once_with(b"test message\n")
         
         # Test receive with same message
-        mock_socket.recv.side_effect = list(b"test message\n")
+        mock_socket.recv.side_effect = [bytes([b]) for b in b"test message\n"]
         result = recv_line(mock_socket)
         
         assert result == "test message"
