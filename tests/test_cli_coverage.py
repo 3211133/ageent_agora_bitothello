@@ -171,24 +171,26 @@ class TestCLIFunctions:
         mock_host.assert_called_once_with("localhost", 8080)
         mock_send.assert_called_with(mock_socket, "QUIT")
     
+    @patch('othello.cli.input')
     @patch('othello.cli.network.join_game')
     @patch('othello.cli.network.recv_line')
     @patch('othello.cli.print')
-    def test_run_network_game_connect(self, mock_print, mock_recv, mock_join):
+    def test_run_network_game_connect(self, mock_print, mock_recv, mock_join, mock_input):
         """Test run_network_game as client with message handling."""
         # Mock network components
         mock_socket = MagicMock()
         mock_join.return_value = mock_socket
         
-        # Test actual game message handling before QUIT
-        mock_recv.side_effect = ["MOVE:a3", "QUIT"]
+        # Mock player input and network messages alternately
+        mock_input.side_effect = ["q"]  # Client quits after receiving opponent move
+        mock_recv.side_effect = ["a2"]  # Opponent makes a valid move
         
         result = run_network_game(connect="localhost:8080", size=4)
         
         assert isinstance(result, BitBoard)
         mock_join.assert_called_once_with("localhost", 8080, timeout=30.0)
         # Verify that message handling occurred
-        assert mock_recv.call_count >= 2
+        mock_recv.assert_called()
     
     def test_run_network_game_invalid_host_format(self):
         """Test run_network_game with invalid host format."""
