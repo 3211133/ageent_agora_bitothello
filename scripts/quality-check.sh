@@ -274,7 +274,7 @@ except ImportError as e:
     
     # Check for very long functions
     print_step "Checking for long functions..."
-    local long_functions=$(awk '/^def / { func_start=NR; func_name=$2 } /^def |^class |^$/ { if (func_start && NR-func_start > 50) print FILENAME":"func_start":"func_name" ("NR-func_start" lines)"; func_start=0 }' src/**/*.py | wc -l)
+    local long_functions=$(awk '/^def / { func_start=NR; func_name=$2 } /^def |^class |^$/ { if (func_start && NR-func_start > 50) print FILENAME ":" func_start ":" func_name " (" NR-func_start " lines)"; func_start=0 }' src/**/*.py | wc -l)
     
     if [ "$long_functions" -gt 0 ]; then
         print_warning "$long_functions functions are longer than 50 lines - consider breaking them down"

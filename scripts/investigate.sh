@@ -114,7 +114,7 @@ perform_search() {
         fi
     else
         # Fallback to grep
-        if grep -r $additional_options "$pattern" $SEARCH_PATHS 2>/dev/null | head -20; then
+        if grep -rE $additional_options "$pattern" $SEARCH_PATHS 2>/dev/null | head -20; then
             echo ""
         else
             echo "  (No matches found)"
