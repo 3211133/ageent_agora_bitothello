@@ -4,6 +4,34 @@
 
 set -e
 
+# Handle help argument
+if [[ "$1" == "--help" || "$1" == "-h" ]]; then
+    echo "Usage: $0 [options]"
+    echo "Setup development environment for Othello project"
+    echo ""
+    echo "Options:"
+    echo "  -h, --help    Show this help message and exit"
+    echo ""
+    echo "This script will:"
+    echo "  1. Check Python 3.8+ installation"
+    echo "  2. Create virtual environment"
+    echo "  3. Install dependencies in development mode"
+    echo "  4. Verify installation and entry points"
+    echo "  5. Create development shortcuts (activate_dev.sh, run_tests.sh)"
+    echo "  6. Display quick start guide"
+    echo ""
+    echo "Requirements:"
+    echo "  - Python 3.8 or higher"
+    echo "  - Internet connection for package downloads"
+    echo "  - Write permissions in current directory"
+    echo ""
+    echo "After setup, use:"
+    echo "  source activate_dev.sh    # Activate development environment"
+    echo "  ./run_tests.sh           # Run test suite"
+    echo "  othello --ai             # Play game with AI"
+    exit 0
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
