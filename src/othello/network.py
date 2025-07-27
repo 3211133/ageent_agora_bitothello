@@ -169,7 +169,7 @@ def recv_line(sock: socket.socket, max_length: int = 1024) -> str:
     """
     try:
         data = b""
-        buffer_size = min(64, max_length)  # Use buffered reading for better performance
+        buffer_size = min(64, max(4, max_length))  # Ensure a minimum buffer size of 4 bytes
         
         while not data.endswith(b"\n"):
             # Check size limit before receiving more data
