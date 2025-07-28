@@ -169,15 +169,30 @@ def recv_line(sock: socket.socket, max_length: int = 1024) -> str:
     """
     try:
         data = b""
+        buffer_size = min(64, max(4, max_length))  # Ensure a minimum buffer size of 4 bytes
+        
         while not data.endswith(b"\n"):
             # Check size limit before receiving more data
             if len(data) >= max_length:
                 raise ValueError(f"Message exceeds maximum length of {max_length} bytes")
             
-            chunk = sock.recv(1)
+            # Receive up to buffer_size bytes, but no more than remaining space
+            remaining = max_length - len(data)
+            recv_size = min(buffer_size, remaining)
+            
+            chunk = sock.recv(recv_size)
             if not chunk:
                 raise ConnectionError("Connection closed by remote host")
             data += chunk
+            
+            # If we received a newline, we might have extra data after it
+            if b"\n" in chunk:
+                # Find the first newline and keep only data up to that point
+                newline_pos = data.find(b"\n")
+                if newline_pos != -1:
+                    # Keep only data up to and including the newline
+                    data = data[:newline_pos + 1]
+                    break
             
         # Remove newline and decode
         message = data[:-1].decode('utf-8')
